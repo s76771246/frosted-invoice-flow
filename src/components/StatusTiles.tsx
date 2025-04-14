@@ -4,8 +4,7 @@ import {
   Clock, 
   CheckCircle, 
   XCircle, 
-  Inbox, 
-  AlertCircle 
+  Inbox
 } from 'lucide-react';
 import { StatusTile } from '@/types';
 
@@ -15,10 +14,15 @@ interface StatusTilesProps {
 }
 
 const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
+  // Filter tiles to only show Total Received, Approved, Pending, and Rejected
+  const filteredTiles = tiles.filter(tile => 
+    ['Received', 'Approved', 'Pending', 'Rejected'].includes(tile.status)
+  );
+  
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'inbox':
-        return <Inbox className="h-6 w-6 text-blue-500" />;
+        return <Inbox className="h-6 w-6 text-purple-500" />;
       case 'check-circle':
         return <CheckCircle className="h-6 w-6 text-green-500" />;
       case 'clock':
@@ -26,20 +30,20 @@ const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
       case 'x-circle':
         return <XCircle className="h-6 w-6 text-red-500" />;
       default:
-        return <AlertCircle className="h-6 w-6 text-gray-500" />;
+        return <Inbox className="h-6 w-6 text-gray-500" />;
     }
   };
 
   const getBorderColor = (color: string) => {
     switch (color) {
-      case 'blue':
-        return 'border-l-4 border-l-blue-500';
       case 'green':
         return 'border-l-4 border-l-green-500';
       case 'amber':
         return 'border-l-4 border-l-amber-500';
       case 'red':
         return 'border-l-4 border-l-red-500';
+      case 'purple':
+        return 'border-l-4 border-l-purple-500';
       default:
         return 'border-l-4 border-l-gray-300';
     }
@@ -47,10 +51,10 @@ const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {tiles.map((tile) => (
+      {filteredTiles.map((tile) => (
         <div
           key={tile.status}
-          className={`status-tile ${getBorderColor(tile.color)}`}
+          className={`status-tile glassmorphism p-4 ${getBorderColor(tile.color)} cursor-pointer transition-transform hover:scale-105`}
           onClick={() => onClick && onClick(tile.status)}
         >
           <div className="flex justify-between items-center">

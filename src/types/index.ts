@@ -9,7 +9,7 @@ export interface User {
   avatar?: string;
 }
 
-export type InvoiceStatus = 'Received' | 'Processed' | 'Pending' | 'Rejected' | 'Matched' | 'Not Matched';
+export type InvoiceStatus = 'Approved' | 'Pending' | 'Rejected' | 'Received' | 'Processed' | 'Matched' | 'Not Matched';
 
 export interface InvoiceItem {
   description: string;
@@ -27,6 +27,8 @@ export interface Invoice {
   validationRemark: string;
   invoiceNo: string;
   invoiceDate: string;
+  receivedDate?: string;
+  receivedTime?: string;
   invoiceDoc: string;
   invoiceCurrency: string;
   invoiceValue: number;

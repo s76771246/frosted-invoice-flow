@@ -9,6 +9,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import InvoiceView from "./pages/InvoiceView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,13 +28,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
       <Route 
         path="/dashboard" 
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/invoice/:id" 
+        element={
+          <ProtectedRoute>
+            <InvoiceView />
           </ProtectedRoute>
         } 
       />

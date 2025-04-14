@@ -12,25 +12,13 @@ export const formatINR = (amount: number): string => {
 
 /**
  * Format a number based on the specified currency
+ * Default is now INR instead of USD
  */
-export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
+export const formatCurrency = (amount: number, currency: string = 'INR'): string => {
   if (currency === 'NA') return 'NA';
   
-  const currencyFormatters: { [key: string]: (amount: number) => string } = {
-    INR: formatINR,
-    USD: (amount: number) => new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2,
-    }).format(amount),
-    EUR: (amount: number) => new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 2,
-    }).format(amount),
-  };
-
-  return (currencyFormatters[currency] || currencyFormatters.USD)(amount);
+  // Always use INR regardless of the currency parameter
+  return formatINR(amount);
 };
 
 /**

@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { Invoice, FilterState } from '@/types';
 import { statusTiles, mockInvoices, monthOptions, quarterOptions, yearOptions, vendorOptions } from '@/data/mockData';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 const Dashboard = () => {
   const { user, hasPermission } = useAuth();
@@ -95,53 +96,152 @@ const Dashboard = () => {
     });
   };
 
+  // Mock data for CEO dashboard charts
+  const statusData = [
+    { name: 'Received', value: 40 },
+    { name: 'Approved', value: 25 },
+    { name: 'Pending', value: 10 },
+    { name: 'Rejected', value: 5 }
+  ];
+
+  const monthlyData = [
+    { month: 'Jan', invoices: 30, amount: 45000 },
+    { month: 'Feb', invoices: 25, amount: 38000 },
+    { month: 'Mar', invoices: 35, amount: 52000 },
+    { month: 'Apr', invoices: 40, amount: 60000 },
+    { month: 'May', invoices: 28, amount: 42000 },
+    { month: 'Jun', invoices: 32, amount: 48000 }
+  ];
+
+  const vendorData = [
+    { name: 'Vendor A', invoices: 20 },
+    { name: 'Vendor B', invoices: 15 },
+    { name: 'Vendor C', invoices: 12 },
+    { name: 'Vendor D', invoices: 8 },
+    { name: 'Others', invoices: 25 }
+  ];
+
+  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE'];
+
+  const renderCEODashboard = () => (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="glassmorphism p-6 rounded-lg col-span-4">
+          <h2 className="text-xl font-bold mb-4">Invoice Status Overview</h2>
+          <div className="h-80 w-full">
+            <BarChart
+              width={1000}
+              height={300}
+              data={statusData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip formatter={(value) => [`${value} Invoices`, 'Count']} />
+              <Legend />
+              <Bar dataKey="value" name="Invoices" fill="#8884d8" />
+            </BarChart>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="glassmorphism p-6 rounded-lg">
+          <h2 className="text-xl font-bold mb-4">Monthly Trends</h2>
+          <div className="h-80 w-full">
+            <LineChart
+              width={500}
+              height={300}
+              data={monthlyData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Line yAxisId="left" type="monotone" dataKey="invoices" stroke="#8884d8" name="Invoices" />
+              <Line yAxisId="right" type="monotone" dataKey="amount" stroke="#82ca9d" name="Amount (₹)" />
+            </LineChart>
+          </div>
+        </div>
+
+        <div className="glassmorphism p-6 rounded-lg">
+          <h2 className="text-xl font-bold mb-4">Vendor Distribution</h2>
+          <div className="h-80 w-full flex justify-center">
+            <PieChart width={400} height={300}>
+              <Pie
+                data={vendorData}
+                cx={200}
+                cy={150}
+                labelLine={false}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                outerRadius={120}
+                fill="#8884d8"
+                dataKey="invoices"
+              >
+                {vendorData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value) => [`${value} Invoices`, 'Count']} />
+              <Legend />
+            </PieChart>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderClerkDashboard = () => (
+    <>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Invoice Management</h1>
+        <Button>Create New Invoice</Button>
+      </div>
+      
+      <FilterBar
+        monthOptions={monthOptions}
+        quarterOptions={quarterOptions}
+        yearOptions={yearOptions}
+        vendorOptions={vendorOptions}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+      />
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="glassmorphism border-0">
+          <TabsTrigger value="all">All Invoices</TabsTrigger>
+          <TabsTrigger value="received">Received</TabsTrigger>
+          <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      <InvoiceTable 
+        invoices={filteredInvoices}
+        onInvoiceClick={handleInvoiceClick}
+      />
+      
+      <InvoiceModal
+        invoice={selectedInvoice}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveInvoice}
+      />
+    </>
+  );
+
   return (
     <div className={`min-h-screen ${currentTheme.gradient}`}>
       <div className="container mx-auto px-4 py-8">
         <Header />
         
         <main>
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Account Payable Dashboard</h1>
-            <Button>Create New Invoice</Button>
-          </div>
-          
-          {hasPermission('CEO') && (
-            <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
-          )}
-          
-          <FilterBar
-            monthOptions={monthOptions}
-            quarterOptions={quarterOptions}
-            yearOptions={yearOptions}
-            vendorOptions={vendorOptions}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
-          
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-            <TabsList className="glassmorphism border-0">
-              <TabsTrigger value="all">All Invoices</TabsTrigger>
-              <TabsTrigger value="received">Received</TabsTrigger>
-              <TabsTrigger value="processed">Processed</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="not matched">Not Matched</TabsTrigger>
-              <TabsTrigger value="matched">Matched</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <InvoiceTable 
-            invoices={filteredInvoices}
-            onInvoiceClick={handleInvoiceClick}
-          />
-          
-          <InvoiceModal
-            invoice={selectedInvoice}
-            open={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onSave={handleSaveInvoice}
-          />
+          {user?.role === 'CEO' ? renderCEODashboard() : renderClerkDashboard()}
         </main>
       </div>
     </div>
