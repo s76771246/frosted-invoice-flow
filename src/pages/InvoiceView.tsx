@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Check, X, Send, ArrowLeft } from 'lucide-react';
+import { Check, X, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Invoice, InvoiceItem } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/formatters';
@@ -77,7 +77,7 @@ const InvoiceView = () => {
     setItems(newItems);
   };
 
-  const handleAction = (action: 'approve' | 'reject' | 'submit') => {
+  const handleAction = (action: 'approve' | 'reject') => {
     if (!invoice) return;
     
     let updatedInvoice = { ...invoice, items };
@@ -93,8 +93,8 @@ const InvoiceView = () => {
     // In a real app, this would call an API
     // For now, we'll just show a toast
     toast({
-      title: `Invoice ${action === 'submit' ? 'Updated' : action === 'approve' ? 'Approved' : 'Rejected'}`,
-      description: `Invoice ${updatedInvoice.invoiceNo} has been ${action === 'submit' ? 'updated' : action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+      title: `Invoice ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+      description: `Invoice ${updatedInvoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
     });
     
     setInvoice(updatedInvoice);
@@ -328,10 +328,6 @@ const InvoiceView = () => {
               </Button>
             </>
           )}
-          
-          <Button onClick={() => handleAction('submit')}>
-            <Send className="mr-2 h-4 w-4" /> Submit
-          </Button>
         </div>
       </div>
     </div>
