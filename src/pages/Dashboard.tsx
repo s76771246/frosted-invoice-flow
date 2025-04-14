@@ -98,10 +98,10 @@ const Dashboard = () => {
 
   // Mock data for CEO dashboard charts
   const statusData = [
-    { name: 'Received', value: 40 },
-    { name: 'Approved', value: 25 },
-    { name: 'Pending', value: 10 },
-    { name: 'Rejected', value: 5 }
+    { name: 'Received', value: 24 },
+    { name: 'Approved', value: 16 },
+    { name: 'Pending', value: 8 },
+    { name: 'Rejected', value: 3 }
   ];
 
   const monthlyData = [
@@ -114,10 +114,10 @@ const Dashboard = () => {
   ];
 
   const vendorData = [
-    { name: 'Vendor A', invoices: 20 },
-    { name: 'Vendor B', invoices: 15 },
-    { name: 'Vendor C', invoices: 12 },
-    { name: 'Vendor D', invoices: 8 },
+    { name: 'MSD SUPPLIES', invoices: 20 },
+    { name: 'IT RoundPoint', invoices: 15 },
+    { name: 'PANTONE', invoices: 12 },
+    { name: 'ECOSAVE', invoices: 8 },
     { name: 'Others', invoices: 25 }
   ];
 
@@ -125,6 +125,8 @@ const Dashboard = () => {
 
   const renderCEODashboard = () => (
     <div className="space-y-8">
+      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="glassmorphism p-6 rounded-lg col-span-4">
           <h2 className="text-xl font-bold mb-4">Invoice Status Overview</h2>
@@ -197,6 +199,8 @@ const Dashboard = () => {
 
   const renderClerkDashboard = () => (
     <>
+      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
+      
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Invoice Management</h1>
         <Button>Create New Invoice</Button>
@@ -214,9 +218,8 @@ const Dashboard = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="glassmorphism border-0">
           <TabsTrigger value="all">All Invoices</TabsTrigger>
-          <TabsTrigger value="received">Received</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
           <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="approved">Approved</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
         </TabsList>
       </Tabs>

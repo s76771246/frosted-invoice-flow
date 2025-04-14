@@ -27,9 +27,6 @@ const InvoiceTable: React.FC<InvoiceTableProps> = ({ invoices, onInvoiceClick })
       'Pending': 'bg-amber-100 text-amber-800',
       'Rejected': 'bg-red-100 text-red-800',
       'Received': 'bg-purple-100 text-purple-800',
-      'Processed': 'bg-blue-100 text-blue-800',
-      'Matched': 'bg-emerald-100 text-emerald-800',
-      'Not Matched': 'bg-gray-100 text-gray-800',
     };
     
     // @ts-ignore

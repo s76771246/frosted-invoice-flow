@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { currentTheme } = useTheme();
-  const [email, setEmail] = useState('john.doe@example.com');
+  const [email, setEmail] = useState('ceo@e42.ai');
   const [password, setPassword] = useState('password');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,7 +66,7 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="john.doe@example.com"
+                  placeholder="ceo@e42.ai"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -98,14 +98,11 @@ const Login = () => {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
               <span>Demo Accounts:</span>
-              <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button variant="outline" size="sm" onClick={() => setEmail('john.doe@example.com')} className="text-xs">
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs">
                   CEO
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('jane.smith@example.com')} className="text-xs">
-                  Manager
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('robert.johnson@example.com')} className="text-xs">
+                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs">
                   Clerk
                 </Button>
               </div>

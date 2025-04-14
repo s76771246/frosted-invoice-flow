@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
@@ -9,7 +9,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
-import { Check, X, Send } from 'lucide-react';
 import { Invoice } from '@/types';
 
 interface InvoiceModalProps {
@@ -47,7 +46,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({
         
         <div className="py-4">
           <p className="text-sm mb-4">
-            Would you like to view this invoice in full page mode to see all details and take actions?
+            Click below to view this invoice in full page mode to see all details and take actions.
           </p>
         </div>
         

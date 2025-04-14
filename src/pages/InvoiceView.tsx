@@ -7,7 +7,6 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Check, X, Send, ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Invoice, InvoiceItem } from '@/types';
@@ -118,189 +117,191 @@ const InvoiceView = () => {
           <h1 className="text-3xl font-bold">Invoice Details: {invoice.invoiceNo}</h1>
         </div>
         
-        <div className="glassmorphism p-6 rounded-lg mb-6">
-          <div className="flex items-center justify-center bg-gray-200 rounded-lg h-96 mb-6">
-            <div className="text-center p-8">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="mt-4 text-sm text-gray-500 font-mono">{invoice.invoiceDoc}</p>
-              <Button className="mt-4" variant="outline">View PDF Document</Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Left side: Invoice document */}
+          <div className="glassmorphism p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Invoice Document</h2>
+            <div className="flex items-center justify-center bg-gray-200 rounded-lg h-96">
+              <div className="text-center p-8">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="mt-4 text-sm text-gray-500 font-mono">{invoice.invoiceDoc}</p>
+                <Button className="mt-4" variant="outline">View PDF Document</Button>
+              </div>
             </div>
           </div>
           
-          <div className="glassmorphism-dark p-6 rounded-lg">
-            <Tabs defaultValue="details">
-              <TabsList className="w-full bg-white/10">
-                <TabsTrigger value="details" className="flex-1">Invoice Details</TabsTrigger>
-                <TabsTrigger value="items" className="flex-1">Line Items</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="details" className="mt-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Invoice No</label>
-                    <Input 
-                      value={invoice.invoiceNo} 
-                      onChange={(e) => handleInputChange('invoiceNo', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Invoice Date</label>
-                    <Input 
-                      value={invoice.invoiceDate} 
-                      onChange={(e) => handleInputChange('invoiceDate', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Title</label>
-                    <Input 
-                      value={invoice.title} 
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">PO No</label>
-                    <Input 
-                      value={invoice.poNo} 
-                      onChange={(e) => handleInputChange('poNo', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Supplier</label>
-                    <Input 
-                      value={invoice.supplierName} 
-                      onChange={(e) => handleInputChange('supplierName', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Supplier Code</label>
-                    <Input 
-                      value={invoice.supplierCode} 
-                      onChange={(e) => handleInputChange('supplierCode', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Currency</label>
-                    <Input 
-                      value="INR"
-                      readOnly
-                      className="bg-gray-100 border border-gray-300"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Total Value</label>
-                    <Input 
-                      value={invoice.invoiceValue.toString()} 
-                      onChange={(e) => handleInputChange('invoiceValue', parseFloat(e.target.value))}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Status</label>
-                    <div className={`px-3 py-2 rounded-md border border-gray-300 font-medium ${
-                      invoice.validationStatus === 'Approved' ? 'bg-green-100 text-green-800' :
-                      invoice.validationStatus === 'Rejected' ? 'bg-red-100 text-red-800' :
-                      'bg-amber-100 text-amber-800'
-                    }`}>
-                      {invoice.validationStatus}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium">Remarks</label>
-                    <Textarea 
-                      value={invoice.validationRemark} 
-                      onChange={(e) => handleInputChange('validationRemark', e.target.value)}
-                      className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="items" className="mt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-white/10 text-left">
-                        <th className="p-2 border-b">Description</th>
-                        <th className="p-2 border-b text-right">Quantity</th>
-                        <th className="p-2 border-b text-right">Rate</th>
-                        <th className="p-2 border-b text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item, index) => (
-                        <tr key={index} className="border-b border-white/10">
-                          <td className="p-2">
-                            <Input 
-                              value={item.description} 
-                              onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                              className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                            />
-                          </td>
-                          <td className="p-2">
-                            <Input 
-                              type="number"
-                              value={item.quantity} 
-                              onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                              className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
-                            />
-                          </td>
-                          <td className="p-2">
-                            <Input 
-                              type="number"
-                              value={item.rate} 
-                              onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                              className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
-                            />
-                          </td>
-                          <td className="p-2 text-right font-medium">
-                            {formatCurrency(item.amount)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-white/10 font-bold">
-                        <td colSpan={3} className="p-2 text-right">Total:</td>
-                        <td className="p-2 text-right">
-                          {formatCurrency(
-                            items.reduce((sum, item) => sum + item.amount, 0)
-                          )}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
+          {/* Right side: String data in editable format */}
+          <div className="glassmorphism p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Invoice No</label>
+                  <Input 
+                    value={invoice.invoiceNo} 
+                    onChange={(e) => handleInputChange('invoiceNo', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
                 </div>
                 
-                <Button 
-                  className="mt-4"
-                  variant="outline"
-                  onClick={() => setItems([...items, { description: '', quantity: 1, rate: 0, amount: 0 }])}
-                >
-                  Add Item
-                </Button>
-              </TabsContent>
-            </Tabs>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Invoice Date</label>
+                  <Input 
+                    value={invoice.invoiceDate} 
+                    onChange={(e) => handleInputChange('invoiceDate', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Title</label>
+                  <Input 
+                    value={invoice.title} 
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">PO No</label>
+                  <Input 
+                    value={invoice.poNo} 
+                    onChange={(e) => handleInputChange('poNo', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Supplier</label>
+                  <Input 
+                    value={invoice.supplierName} 
+                    onChange={(e) => handleInputChange('supplierName', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Supplier Code</label>
+                  <Input 
+                    value={invoice.supplierCode} 
+                    onChange={(e) => handleInputChange('supplierCode', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Currency</label>
+                  <Input 
+                    value="INR"
+                    readOnly
+                    className="bg-gray-100 border border-gray-300"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Total Value</label>
+                  <Input 
+                    value={invoice.invoiceValue.toString()} 
+                    onChange={(e) => handleInputChange('invoiceValue', parseFloat(e.target.value))}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Status</label>
+                  <div className={`px-3 py-2 rounded-md border border-gray-300 font-medium ${
+                    invoice.validationStatus === 'Approved' ? 'bg-green-100 text-green-800' :
+                    invoice.validationStatus === 'Rejected' ? 'bg-red-100 text-red-800' :
+                    'bg-amber-100 text-amber-800'
+                  }`}>
+                    {invoice.validationStatus}
+                  </div>
+                </div>
+                
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-medium">Remarks</label>
+                  <Textarea 
+                    value={invoice.validationRemark} 
+                    onChange={(e) => handleInputChange('validationRemark', e.target.value)}
+                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
+        {/* Table data in editable format */}
+        <div className="glassmorphism p-6 rounded-lg mb-6">
+          <h2 className="text-xl font-bold mb-4">Line Items</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-white/10 text-left">
+                  <th className="p-2 border-b">Description</th>
+                  <th className="p-2 border-b text-right">Quantity</th>
+                  <th className="p-2 border-b text-right">Rate</th>
+                  <th className="p-2 border-b text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr key={index} className="border-b border-white/10">
+                    <td className="p-2">
+                      <Input 
+                        value={item.description} 
+                        onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                        className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input 
+                        type="number"
+                        value={item.quantity} 
+                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                        className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input 
+                        type="number"
+                        value={item.rate} 
+                        onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                        className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
+                      />
+                    </td>
+                    <td className="p-2 text-right font-medium">
+                      {formatCurrency(item.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-white/10 font-bold">
+                  <td colSpan={3} className="p-2 text-right">Total:</td>
+                  <td className="p-2 text-right">
+                    {formatCurrency(
+                      items.reduce((sum, item) => sum + item.amount, 0)
+                    )}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          
+          <Button 
+            className="mt-4"
+            variant="outline"
+            onClick={() => setItems([...items, { description: '', quantity: 1, rate: 0, amount: 0 }])}
+          >
+            Add Item
+          </Button>
+        </div>
+        
+        {/* Action buttons */}
         <div className="flex justify-end space-x-4 mb-8">
           <Button 
             variant="outline" 
