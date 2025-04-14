@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +21,6 @@ const InvoiceView = () => {
   const [items, setItems] = useState<InvoiceItem[]>([]);
   
   useEffect(() => {
-    // In a real app, this would call an API
     const foundInvoice = mockInvoices.find(inv => inv.id === id);
     if (foundInvoice) {
       setInvoice(foundInvoice);
@@ -67,10 +65,8 @@ const InvoiceView = () => {
     if (field === 'quantity' || field === 'rate') {
       const numValue = typeof value === 'string' ? parseFloat(value) : value;
       newItems[index][field] = numValue;
-      // Update the amount
       newItems[index].amount = newItems[index].quantity * newItems[index].rate;
     } else {
-      // @ts-ignore
       newItems[index][field] = value;
     }
     
@@ -90,8 +86,11 @@ const InvoiceView = () => {
       updatedInvoice.validationRemark = 'Invoice rejected by ' + user?.name;
     }
     
-    // In a real app, this would call an API
-    // For now, we'll just show a toast
+    const invoiceIndex = mockInvoices.findIndex(inv => inv.id === invoice.id);
+    if (invoiceIndex !== -1) {
+      mockInvoices[invoiceIndex] = updatedInvoice;
+    }
+    
     toast({
       title: `Invoice ${action === 'approve' ? 'Approved' : 'Rejected'}`,
       description: `Invoice ${updatedInvoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
@@ -99,7 +98,6 @@ const InvoiceView = () => {
     
     setInvoice(updatedInvoice);
     
-    // Navigate back to dashboard after a short delay
     setTimeout(() => {
       navigate('/dashboard');
     }, 1500);
@@ -118,7 +116,6 @@ const InvoiceView = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Left side: Invoice document */}
           <div className="glassmorphism p-6 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Invoice Document</h2>
             <div className="flex items-center justify-center bg-gray-200 rounded-lg h-96">
@@ -132,7 +129,6 @@ const InvoiceView = () => {
             </div>
           </div>
           
-          {/* Right side: String data in editable format */}
           <div className="glassmorphism p-6 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
             <div className="space-y-4">
@@ -234,7 +230,6 @@ const InvoiceView = () => {
           </div>
         </div>
         
-        {/* Table data in editable format */}
         <div className="glassmorphism p-6 rounded-lg mb-6">
           <h2 className="text-xl font-bold mb-4">Line Items</h2>
           <div className="overflow-x-auto">
@@ -301,7 +296,6 @@ const InvoiceView = () => {
           </Button>
         </div>
         
-        {/* Action buttons */}
         <div className="flex justify-end space-x-4 mb-8">
           <Button 
             variant="outline" 
