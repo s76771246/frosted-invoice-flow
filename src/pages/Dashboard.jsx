@@ -42,14 +42,35 @@ const Dashboard = () => {
   // Calculate status counts whenever invoices or filters change
   useEffect(() => {
     const calculateStatusCounts = () => {
-      // First apply the month filter for current month
-      let filtered = mockInvoices;
+      // Apply all filters to get the current filtered set of invoices
+      let filtered = [...mockInvoices];
       
       if (filters.month !== 'all') {
         filtered = filtered.filter(invoice => {
           const invoiceMonth = invoice.invoiceDate.split('/')[0];
           return invoiceMonth === filters.month;
         });
+      }
+      
+      if (filters.quarter !== 'all') {
+        filtered = filtered.filter(invoice => {
+          const month = parseInt(invoice.invoiceDate.split('/')[0]);
+          const quarter = Math.ceil(month / 3);
+          return `Q${quarter}` === filters.quarter;
+        });
+      }
+
+      if (filters.year !== 'all') {
+        filtered = filtered.filter(invoice => {
+          const invoiceYear = invoice.invoiceDate.split('/')[2];
+          return invoiceYear === filters.year;
+        });
+      }
+
+      if (filters.vendor !== 'all') {
+        filtered = filtered.filter(invoice => 
+          invoice.supplierName === filters.vendor
+        );
       }
       
       const receivedCount = filtered.length;
@@ -86,10 +107,10 @@ const Dashboard = () => {
     };
     
     calculateStatusCounts();
-  }, [mockInvoices, filters.month]);
+  }, [mockInvoices, filters]);
 
   useEffect(() => {
-    let result = mockInvoices;
+    let result = [...mockInvoices];
 
     if (activeTab !== 'all') {
       result = result.filter(invoice => 
@@ -142,11 +163,13 @@ const Dashboard = () => {
   };
 
   const handleSaveInvoice = (updatedInvoice) => {
+    // Find the invoice in the mockInvoices array and update it
     const index = mockInvoices.findIndex(inv => inv.id === updatedInvoice.id);
     if (index !== -1) {
       mockInvoices[index] = updatedInvoice;
     }
     
+    // Update the filtered invoices list
     setFilteredInvoices(prevInvoices => 
       prevInvoices.map(invoice => 
         invoice.id === updatedInvoice.id ? updatedInvoice : invoice
@@ -157,7 +180,25 @@ const Dashboard = () => {
       title: "Invoice Updated",
       description: `Invoice ${updatedInvoice.invoiceNo} has been updated successfully.`,
     });
+    
+    // Force a recalculation of the status tiles
+    const event = new Event('invoiceUpdated');
+    window.dispatchEvent(event);
   };
+
+  // Listen for invoice updates to recalculate status counts
+  useEffect(() => {
+    const handleInvoiceUpdate = () => {
+      // This will trigger the useEffect that calculates status counts
+      setFilters(prev => ({ ...prev }));
+    };
+    
+    window.addEventListener('invoiceUpdated', handleInvoiceUpdate);
+    
+    return () => {
+      window.removeEventListener('invoiceUpdated', handleInvoiceUpdate);
+    };
+  }, []);
 
   const statusData = statusTiles.map(tile => ({
     name: tile.status,

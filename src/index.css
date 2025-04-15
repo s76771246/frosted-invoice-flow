@@ -133,6 +133,23 @@
   .invoice-item {
     @apply glassmorphism-light p-4 my-2 hover:scale-[1.01] transition-all duration-200 cursor-pointer;
   }
+  
+  /* Table styling for glassmorphism */
+  .table-glass {
+    @apply true-glass overflow-hidden;
+  }
+  
+  .table-glass th {
+    @apply bg-white/20 backdrop-blur-sm text-gray-800 font-semibold;
+  }
+  
+  .table-glass tr {
+    @apply hover:bg-white/20 transition-colors duration-200;
+  }
+  
+  .table-glass td {
+    @apply border-t border-white/20;
+  }
 }
 
 /* Custom animations */

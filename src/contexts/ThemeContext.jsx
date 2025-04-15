@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { themeOptions } from '../data/mockData';
+import { themeOptions } from '../data/themeOptions';
 
 const ThemeContext = createContext({
   currentTheme: themeOptions[0],
