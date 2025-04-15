@@ -80,7 +80,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-br from-blue-400/25 to-indigo-300/25 text-foreground min-h-screen;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -96,6 +96,18 @@
   
   .glassmorphism-light {
     @apply bg-white/40 backdrop-blur-sm border border-white/50 rounded-xl shadow-md;
+  }
+
+  .true-glass {
+    @apply bg-white/30 backdrop-blur-xl border border-white/40 rounded-xl shadow-[0_8px_32px_0_rgba(31,38,135,0.1)];
+  }
+
+  .floating-glass {
+    @apply true-glass hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.2)] transition-all duration-300 hover:scale-[1.02];
+  }
+
+  .glass-panel {
+    @apply bg-white/30 backdrop-blur-xl rounded-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)];
   }
 
   .bg-gradient-primary {
@@ -115,10 +127,40 @@
   }
 
   .status-tile {
-    @apply glassmorphism p-5 flex flex-col space-y-2 hover:scale-[1.02] transition-all duration-300;
+    @apply floating-glass p-5 flex flex-col space-y-2;
   }
   
   .invoice-item {
     @apply glassmorphism-light p-4 my-2 hover:scale-[1.01] transition-all duration-200 cursor-pointer;
   }
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* For scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.6);
 }
