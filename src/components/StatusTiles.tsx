@@ -22,30 +22,15 @@ const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'inbox':
-        return <Inbox className="h-6 w-6 text-purple-500" />;
+        return <Inbox className="h-7 w-7 text-purple-500" />;
       case 'check-circle':
-        return <CheckCircle className="h-6 w-6 text-green-500" />;
+        return <CheckCircle className="h-7 w-7 text-green-500" />;
       case 'clock':
-        return <Clock className="h-6 w-6 text-amber-500" />;
+        return <Clock className="h-7 w-7 text-amber-500" />;
       case 'x-circle':
-        return <XCircle className="h-6 w-6 text-red-500" />;
+        return <XCircle className="h-7 w-7 text-red-500" />;
       default:
-        return <Inbox className="h-6 w-6 text-gray-500" />;
-    }
-  };
-
-  const getBorderColor = (color: string) => {
-    switch (color) {
-      case 'green':
-        return 'border-l-4 border-l-green-500';
-      case 'amber':
-        return 'border-l-4 border-l-amber-500';
-      case 'red':
-        return 'border-l-4 border-l-red-500';
-      case 'purple':
-        return 'border-l-4 border-l-purple-500';
-      default:
-        return 'border-l-4 border-l-gray-300';
+        return <Inbox className="h-7 w-7 text-gray-500" />;
     }
   };
 
@@ -54,14 +39,14 @@ const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
       {filteredTiles.map((tile) => (
         <div
           key={tile.status}
-          className={`status-tile glassmorphism p-4 ${getBorderColor(tile.color)} cursor-pointer transition-transform hover:scale-105`}
+          className="status-tile bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg cursor-pointer transition-all duration-300 hover:bg-white/40 hover:shadow-xl"
           onClick={() => onClick && onClick(tile.status.toLowerCase())}
         >
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">{tile.status}</h3>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-semibold text-gray-800">{tile.status}</h3>
             {getIcon(tile.icon)}
           </div>
-          <p className="text-3xl font-bold">{tile.count}</p>
+          <p className="text-4xl font-bold text-gray-900">{tile.count}</p>
         </div>
       ))}
     </div>

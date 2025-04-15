@@ -87,15 +87,15 @@
 
 @layer components {
   .glassmorphism {
-    @apply bg-glass backdrop-blur-lg border border-glass-border rounded-xl shadow-md;
+    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg;
   }
   
   .glassmorphism-dark {
-    @apply bg-glass-darker backdrop-blur-lg border border-glass-border rounded-xl shadow-md;
+    @apply bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg;
   }
   
   .glassmorphism-light {
-    @apply bg-glass-lighter backdrop-blur-md border border-glass-border rounded-xl shadow-sm;
+    @apply bg-white/40 backdrop-blur-sm border border-white/50 rounded-xl shadow-md;
   }
 
   .bg-gradient-primary {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -165,9 +166,9 @@ const Dashboard = () => {
     <div className="space-y-8">
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="glassmorphism p-6 rounded-lg col-span-4">
-          <h2 className="text-xl font-bold mb-4">Invoice Status Overview</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
+        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Invoice Status Overview</h2>
           <div className="h-80 w-full">
             <BarChart
               width={1000}
@@ -175,20 +176,23 @@ const Dashboard = () => {
               data={statusData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(value) => [`${value} Invoices`, 'Count']} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+              <XAxis dataKey="name" tick={{ fill: '#4B5563' }} />
+              <YAxis tick={{ fill: '#4B5563' }} />
+              <Tooltip 
+                formatter={(value) => [`${value} Invoices`, 'Count']}
+                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}
+              />
               <Legend />
-              <Bar dataKey="value" name="Invoices" fill="#8884d8" />
+              <Bar dataKey="value" name="Invoices" fill="rgba(136, 132, 216, 0.8)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="glassmorphism p-6 rounded-lg">
-          <h2 className="text-xl font-bold mb-4">Monthly Trends</h2>
+        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Monthly Trends</h2>
           <div className="h-80 w-full">
             <LineChart
               width={500}
@@ -196,20 +200,22 @@ const Dashboard = () => {
               data={monthlyData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+              <XAxis dataKey="month" tick={{ fill: '#4B5563' }} />
+              <YAxis yAxisId="left" tick={{ fill: '#4B5563' }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fill: '#4B5563' }} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}
+              />
               <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="invoices" stroke="#8884d8" name="Invoices" />
-              <Line yAxisId="right" type="monotone" dataKey="amount" stroke="#82ca9d" name="Amount (₹)" />
+              <Line yAxisId="left" type="monotone" dataKey="invoices" stroke="rgba(136, 132, 216, 0.8)" strokeWidth={2} name="Invoices" dot={{ stroke: 'rgba(136, 132, 216, 1)', strokeWidth: 2, r: 4, fill: 'white' }} />
+              <Line yAxisId="right" type="monotone" dataKey="amount" stroke="rgba(130, 202, 157, 0.8)" strokeWidth={2} name="Amount (₹)" dot={{ stroke: 'rgba(130, 202, 157, 1)', strokeWidth: 2, r: 4, fill: 'white' }} />
             </LineChart>
           </div>
         </div>
 
-        <div className="glassmorphism p-6 rounded-lg">
-          <h2 className="text-xl font-bold mb-4">Vendor Distribution</h2>
+        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Vendor Distribution</h2>
           <div className="h-80 w-full flex justify-center">
             <PieChart width={400} height={300}>
               <Pie
@@ -223,10 +229,13 @@ const Dashboard = () => {
                 dataKey="invoices"
               >
                 {vendorData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} fillOpacity={0.8} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => [`${value} Invoices`, 'Count']} />
+              <Tooltip 
+                formatter={(value) => [`${value} Invoices`, 'Count']}
+                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}
+              />
               <Legend />
             </PieChart>
           </div>
@@ -240,33 +249,36 @@ const Dashboard = () => {
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
       
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Invoice Management</h1>
-        <Button>Create New Invoice</Button>
+        <h1 className="text-3xl font-bold text-gray-800">Invoice Management</h1>
+        <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300">Create New Invoice</Button>
       </div>
       
-      <FilterBar
-        monthOptions={monthOptions}
-        quarterOptions={quarterOptions}
-        yearOptions={yearOptions}
-        vendorOptions={vendorOptions}
-        filters={filters}
-        onFilterChange={handleFilterChange}
-      />
+      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6 mb-6">
+        <FilterBar
+          monthOptions={monthOptions}
+          quarterOptions={quarterOptions}
+          yearOptions={yearOptions}
+          vendorOptions={vendorOptions}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="glassmorphism border-0">
-          <TabsTrigger value="all">All Invoices</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected</TabsTrigger>
-          <TabsTrigger value="received">Received</TabsTrigger>
+        <TabsList className="bg-white/30 backdrop-blur-md border border-white/40 p-1 rounded-lg">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
+          <TabsTrigger value="pending" className="data-[state=active]:bg-white/60">Pending</TabsTrigger>
+          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
+          <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
         </TabsList>
       </Tabs>
       
-      <InvoiceTable 
-        invoices={filteredInvoices}
-        onInvoiceClick={handleInvoiceClick}
-      />
+      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
+        <InvoiceTable 
+          invoices={filteredInvoices}
+          onInvoiceClick={handleInvoiceClick}
+        />
+      </div>
       
       <InvoiceModal
         invoice={selectedInvoice}
@@ -278,11 +290,11 @@ const Dashboard = () => {
   );
 
   return (
-    <div className={`min-h-screen ${currentTheme.gradient}`}>
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
-        <main>
+        <main className="mt-8">
           {user?.role === 'CEO' ? renderCEODashboard() : renderClerkDashboard()}
         </main>
       </div>
