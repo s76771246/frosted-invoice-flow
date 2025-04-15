@@ -47,12 +47,13 @@ const Login = () => {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${currentTheme.gradient}`}>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-200/60 to-amber-100/60"></div>
       <div className="w-full max-w-md p-8">
-        <Card className="glassmorphism border-0 backdrop-blur-lg">
+        <Card className="true-glass border-0 backdrop-blur-xl">
           <CardHeader className="space-y-1">
             <div className="flex justify-center mb-4">
-              <div className="h-12 w-12 rounded-full bg-primary"></div>
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/70 shadow-lg"></div>
             </div>
             <CardTitle className="text-2xl font-bold text-center">Account Payable Management</CardTitle>
             <CardDescription className="text-center">
@@ -70,7 +71,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/20 border-0"
+                  className="bg-white/10 backdrop-blur-md border-white/30"
                 />
               </div>
               <div className="space-y-2">
@@ -87,10 +88,10 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/20 border-0"
+                  className="bg-white/10 backdrop-blur-md border-white/30"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-primary/90 hover:bg-primary backdrop-blur-sm" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Sign In'}
               </Button>
             </form>
@@ -99,10 +100,10 @@ const Login = () => {
             <div className="text-sm text-center text-muted-foreground">
               <span>Demo Accounts:</span>
               <div className="grid grid-cols-2 gap-2 mt-2">
-                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs">
+                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-white/30">
                   CEO
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs">
+                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-white/30">
                   Clerk
                 </Button>
               </div>

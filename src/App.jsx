@@ -59,7 +59,7 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <TooltipProvider>
-            <div className="min-h-screen bg-gradient-to-br from-blue-400/25 to-indigo-300/25">
+            <div className="min-h-screen bg-gradient-to-br from-amber-200/60 to-amber-100/60">
               <Toaster />
               <Sonner />
               <AppRoutes />

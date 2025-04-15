@@ -17,13 +17,13 @@ const InvoiceTable = ({ invoices, onInvoiceClick }) => {
   
   const renderStatus = (status) => {
     const statusClasses = {
-      'Approved': 'bg-green-100 text-green-800',
-      'Pending': 'bg-amber-100 text-amber-800',
-      'Rejected': 'bg-red-100 text-red-800',
-      'Received': 'bg-purple-100 text-purple-800',
+      'Approved': 'bg-green-100/80 text-green-800',
+      'Pending': 'bg-amber-100/80 text-amber-800',
+      'Rejected': 'bg-red-100/80 text-red-800',
+      'Received': 'bg-purple-100/80 text-purple-800',
     };
     
-    const className = statusClasses[status] || 'bg-gray-100 text-gray-800';
+    const className = statusClasses[status] || 'bg-gray-100/80 text-gray-800';
     
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${className}`}>
@@ -39,9 +39,9 @@ const InvoiceTable = ({ invoices, onInvoiceClick }) => {
 
   return (
     <div className="true-glass overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[calc(100vh-20rem)]">
         <Table>
-          <TableHeader className="bg-white/10 backdrop-blur-sm">
+          <TableHeader className="bg-white/20 backdrop-blur-sm sticky top-0 z-10">
             <TableRow>
               <TableHead className="w-12"></TableHead>
               <TableHead>UNIQUE ID</TableHead>

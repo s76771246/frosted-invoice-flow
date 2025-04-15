@@ -5,16 +5,16 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 43 80% 96%;
+    --foreground: 20 10% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 20 10% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 20 10% 20%;
 
-    --primary: 221.2 83% 53.3%;
+    --primary: 219 70% 55%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -31,9 +31,9 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83% 53.3%;
+    --ring: 219 70% 55%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -45,25 +45,25 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  .theme-gold {
+    --background: 43 80% 96%;
+    --foreground: 20 10% 20%;
+    --primary: 36 90% 45%;
+    --ring: 36 90% 45%;
+  }
+
+  .theme-green {
+    --background: 120 40% 98%;
+    --foreground: 120 10% 20%;
+    --primary: 150 63% 43%;
+    --ring: 150 63% 43%;
+  }
+
   .theme-blue {
     --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
     --primary: 221.2 83% 53.3%;
     --ring: 221.2 83% 53.3%;
-  }
-
-  .theme-purple {
-    --background: 252 40% 98%;
-    --foreground: 272 84% 4.9%;
-    --primary: 267 83% 53.3%;
-    --ring: 267 83% 53.3%;
-  }
-
-  .theme-teal {
-    --background: 180 40% 98%;
-    --foreground: 192 84% 4.9%;
-    --primary: 187 83% 43.3%;
-    --ring: 187 83% 43.3%;
   }
 
   .theme-amber {
@@ -80,22 +80,22 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-blue-400/25 to-indigo-300/25 text-foreground min-h-screen;
+    @apply bg-gradient-to-br from-amber-200/60 to-amber-100/60 text-foreground min-h-screen;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
   .glassmorphism {
-    @apply bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg;
+    @apply bg-white/20 backdrop-blur-md border border-white/40 rounded-xl shadow-lg;
   }
   
   .glassmorphism-dark {
-    @apply bg-white/20 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg;
+    @apply bg-white/10 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg;
   }
   
   .glassmorphism-light {
-    @apply bg-white/40 backdrop-blur-sm border border-white/50 rounded-xl shadow-md;
+    @apply bg-white/30 backdrop-blur-sm border border-white/50 rounded-xl shadow-md;
   }
 
   .true-glass {
@@ -107,23 +107,23 @@
   }
 
   .glass-panel {
-    @apply bg-white/30 backdrop-blur-xl rounded-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)];
+    @apply bg-white/20 backdrop-blur-xl rounded-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)];
+  }
+
+  .bg-gradient-gold {
+    @apply bg-gradient-to-br from-amber-300/40 via-amber-200/40 to-yellow-100/40;
+  }
+
+  .bg-gradient-green {
+    @apply bg-gradient-to-br from-green-300/40 via-emerald-200/40 to-teal-100/40;
   }
 
   .bg-gradient-primary {
-    @apply bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500;
-  }
-
-  .bg-gradient-purple {
-    @apply bg-gradient-to-br from-purple-400 via-pink-400 to-indigo-500;
-  }
-
-  .bg-gradient-teal {
-    @apply bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-500;
+    @apply bg-gradient-to-br from-blue-400/40 via-indigo-300/40 to-purple-200/40;
   }
 
   .bg-gradient-amber {
-    @apply bg-gradient-to-br from-amber-400 via-orange-400 to-rose-500;
+    @apply bg-gradient-to-br from-amber-400/40 via-orange-300/40 to-rose-200/40;
   }
 
   .status-tile {

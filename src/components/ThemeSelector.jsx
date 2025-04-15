@@ -35,7 +35,7 @@ const ThemeSelector = () => {
             <DropdownMenuRadioItem
               key={theme.id}
               value={theme.id}
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-white/30"
             >
               <div className="flex items-center gap-2">
                 <div className={`h-4 w-4 rounded-full ${theme.gradient}`} />
