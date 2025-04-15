@@ -67,7 +67,7 @@ const InvoiceView = () => {
       newItems[index][field] = numValue;
       newItems[index].amount = newItems[index].quantity * newItems[index].rate;
     } else {
-      newItems[index][field] = value;
+      (newItems[index] as any)[field] = value;
     }
     
     setItems(newItems);

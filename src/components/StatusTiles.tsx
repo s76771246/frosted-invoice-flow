@@ -55,7 +55,7 @@ const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
         <div
           key={tile.status}
           className={`status-tile glassmorphism p-4 ${getBorderColor(tile.color)} cursor-pointer transition-transform hover:scale-105`}
-          onClick={() => onClick && onClick(tile.status)}
+          onClick={() => onClick && onClick(tile.status.toLowerCase())}
         >
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">{tile.status}</h3>

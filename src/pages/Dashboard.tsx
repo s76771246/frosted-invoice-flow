@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -10,8 +9,8 @@ import InvoiceModal from '@/components/InvoiceModal';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Invoice, FilterState } from '@/types';
-import { statusTiles, mockInvoices, monthOptions, quarterOptions, yearOptions, vendorOptions } from '@/data/mockData';
+import { Invoice, FilterState, StatusTile } from '@/types';
+import { mockInvoices, monthOptions, quarterOptions, yearOptions, vendorOptions } from '@/data/mockData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 const Dashboard = () => {
@@ -27,9 +26,47 @@ const Dashboard = () => {
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>(mockInvoices);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusTiles, setStatusTiles] = useState<StatusTile[]>([]);
 
   useEffect(() => {
-    // Apply filters
+    const calculateStatusCounts = () => {
+      const receivedCount = mockInvoices.length;
+      const approvedCount = mockInvoices.filter(inv => inv.validationStatus === 'Approved').length;
+      const pendingCount = mockInvoices.filter(inv => inv.validationStatus === 'Pending').length;
+      const rejectedCount = mockInvoices.filter(inv => inv.validationStatus === 'Rejected').length;
+      
+      setStatusTiles([
+        {
+          status: 'Received',
+          count: receivedCount,
+          color: 'purple',
+          icon: 'inbox',
+        },
+        {
+          status: 'Approved',
+          count: approvedCount,
+          color: 'green',
+          icon: 'check-circle',
+        },
+        {
+          status: 'Pending',
+          count: pendingCount,
+          color: 'amber',
+          icon: 'clock',
+        },
+        {
+          status: 'Rejected',
+          count: rejectedCount,
+          color: 'red',
+          icon: 'x-circle',
+        },
+      ]);
+    };
+    
+    calculateStatusCounts();
+  }, [mockInvoices]);
+
+  useEffect(() => {
     let result = mockInvoices;
 
     if (activeTab !== 'all') {
@@ -83,7 +120,11 @@ const Dashboard = () => {
   };
 
   const handleSaveInvoice = (updatedInvoice: Invoice) => {
-    // In a real app, this would call an API
+    const index = mockInvoices.findIndex(inv => inv.id === updatedInvoice.id);
+    if (index !== -1) {
+      mockInvoices[index] = updatedInvoice;
+    }
+    
     setFilteredInvoices(prevInvoices => 
       prevInvoices.map(invoice => 
         invoice.id === updatedInvoice.id ? updatedInvoice : invoice
@@ -96,13 +137,10 @@ const Dashboard = () => {
     });
   };
 
-  // Mock data for CEO dashboard charts
-  const statusData = [
-    { name: 'Received', value: 24 },
-    { name: 'Approved', value: 16 },
-    { name: 'Pending', value: 8 },
-    { name: 'Rejected', value: 3 }
-  ];
+  const statusData = statusTiles.map(tile => ({
+    name: tile.status,
+    value: tile.count
+  }));
 
   const monthlyData = [
     { month: 'Jan', invoices: 30, amount: 45000 },
@@ -221,6 +259,7 @@ const Dashboard = () => {
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
+          <TabsTrigger value="received">Received</TabsTrigger>
         </TabsList>
       </Tabs>
       
