@@ -45,6 +45,15 @@ const Dashboard = () => {
       // Apply all filters to get the current filtered set of invoices
       let filtered = [...mockInvoices];
       
+      // Filter based on user role
+      if (user?.role === 'Clerk') {
+        // Clerks see all invoices
+        filtered = filtered;
+      } else if (user?.role === 'Manager') {
+        // Managers only see approved invoices
+        filtered = filtered.filter(inv => inv.validationStatus === 'Approved');
+      }
+      
       if (filters.month !== 'all') {
         filtered = filtered.filter(invoice => {
           const invoiceMonth = invoice.invoiceDate.split('/')[0];
@@ -107,10 +116,19 @@ const Dashboard = () => {
     };
     
     calculateStatusCounts();
-  }, [mockInvoices, filters]);
+  }, [mockInvoices, filters, user]);
 
   useEffect(() => {
     let result = [...mockInvoices];
+
+    // Filter based on user role
+    if (user?.role === 'Clerk') {
+      // Clerks see all invoices
+      result = result;
+    } else if (user?.role === 'Manager') {
+      // Managers only see approved invoices
+      result = result.filter(inv => inv.validationStatus === 'Approved');
+    }
 
     if (activeTab !== 'all') {
       result = result.filter(invoice => 
@@ -147,7 +165,7 @@ const Dashboard = () => {
     }
 
     setFilteredInvoices(result);
-  }, [activeTab, filters]);
+  }, [activeTab, filters, user]);
 
   const handleFilterChange = (type, value) => {
     setFilters(prev => ({ ...prev, [type]: value }));
@@ -306,50 +324,60 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderClerkDashboard = () => (
-    <>
-      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
-      
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Invoice Management</h1>
-        <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300">Create New Invoice</Button>
-      </div>
-      
-      <div className="glass-panel p-6 mb-6">
-        <FilterBar
-          monthOptions={monthOptions}
-          quarterOptions={quarterOptions}
-          yearOptions={yearOptions}
-          vendorOptions={vendorOptions}
-          filters={filters}
-          onFilterChange={handleFilterChange}
+  const renderClerkManagerDashboard = () => {
+    const isManager = user?.role === 'Manager';
+    const title = isManager ? "Manager Invoice Management" : "Invoice Management";
+    const createButtonVisible = !isManager;
+    
+    return (
+      <>
+        <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
+        
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">{title}</h1>
+          {createButtonVisible && (
+            <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300">
+              Create New Invoice
+            </Button>
+          )}
+        </div>
+        
+        <div className="glass-panel p-6 mb-6">
+          <FilterBar
+            monthOptions={monthOptions}
+            quarterOptions={quarterOptions}
+            yearOptions={yearOptions}
+            vendorOptions={vendorOptions}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        </div>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="glass-panel p-1">
+            <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
+            <TabsTrigger value="pending" className="data-[state=active]:bg-white/60">Pending</TabsTrigger>
+            <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
+            <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        <div className="glass-panel">
+          <InvoiceTable 
+            invoices={filteredInvoices}
+            onInvoiceClick={handleInvoiceClick}
+          />
+        </div>
+        
+        <InvoiceModal
+          invoice={selectedInvoice}
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveInvoice}
         />
-      </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="glass-panel p-1">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
-          <TabsTrigger value="pending" className="data-[state=active]:bg-white/60">Pending</TabsTrigger>
-          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
-          <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      <div className="glass-panel">
-        <InvoiceTable 
-          invoices={filteredInvoices}
-          onInvoiceClick={handleInvoiceClick}
-        />
-      </div>
-      
-      <InvoiceModal
-        invoice={selectedInvoice}
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveInvoice}
-      />
-    </>
-  );
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen">
@@ -357,7 +385,9 @@ const Dashboard = () => {
         <Header />
         
         <main className="mt-8">
-          {user?.role === 'CEO' ? renderCEODashboard() : renderClerkDashboard()}
+          {user?.role === 'CEO' 
+            ? renderCEODashboard() 
+            : renderClerkManagerDashboard()}
         </main>
       </div>
     </div>

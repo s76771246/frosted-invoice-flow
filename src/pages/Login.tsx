@@ -99,12 +99,15 @@ const Login = () => {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center text-muted-foreground">
               <span>Demo Accounts:</span>
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="grid grid-cols-3 gap-2 mt-2">
                 <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-white/30">
                   CEO
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-white/30">
                   Clerk
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setEmail('manager@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-white/30">
+                  Manager
                 </Button>
               </div>
             </div>

@@ -78,12 +78,28 @@ const InvoiceView = () => {
     
     let updatedInvoice = { ...invoice, items };
     
-    if (action === 'approve') {
-      updatedInvoice.validationStatus = 'Approved';
-      updatedInvoice.validationRemark = 'Invoice approved by ' + user?.name;
-    } else if (action === 'reject') {
-      updatedInvoice.validationStatus = 'Rejected';
-      updatedInvoice.validationRemark = 'Invoice rejected by ' + user?.name;
+    if (user?.role === 'Clerk') {
+      if (action === 'approve') {
+        updatedInvoice.validationStatus = 'Approved';
+        updatedInvoice.validationRemark = 'Invoice approved by Clerk: ' + user?.name;
+        updatedInvoice.clerkApproved = true;
+        updatedInvoice.managerApproved = false;
+      } else if (action === 'reject') {
+        updatedInvoice.validationStatus = 'Rejected';
+        updatedInvoice.validationRemark = 'Invoice rejected by Clerk: ' + user?.name;
+        updatedInvoice.clerkApproved = false;
+        updatedInvoice.managerApproved = false;
+      }
+    } else if (user?.role === 'Manager') {
+      if (action === 'approve') {
+        updatedInvoice.validationStatus = 'Final Approved';
+        updatedInvoice.validationRemark = 'Invoice approved by Manager: ' + user?.name;
+        updatedInvoice.managerApproved = true;
+      } else if (action === 'reject') {
+        updatedInvoice.validationStatus = 'Manager Rejected';
+        updatedInvoice.validationRemark = 'Invoice rejected by Manager: ' + user?.name;
+        updatedInvoice.managerApproved = false;
+      }
     }
     
     const invoiceIndex = mockInvoices.findIndex(inv => inv.id === invoice.id);
@@ -101,6 +117,17 @@ const InvoiceView = () => {
     setTimeout(() => {
       navigate('/dashboard');
     }, 1500);
+  };
+
+  // Determine if approval/rejection buttons should be shown based on user role
+  const showApprovalButtons = () => {
+    if (user?.role === 'Clerk' && invoice.validationStatus === 'Pending') {
+      return true;
+    }
+    if (user?.role === 'Manager' && invoice.validationStatus === 'Approved' && !invoice.managerApproved) {
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -208,8 +235,8 @@ const InvoiceView = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Status</label>
                   <div className={`px-3 py-2 rounded-md border border-white/30 font-medium ${
-                    invoice.validationStatus === 'Approved' ? 'bg-green-100/80 text-green-800' :
-                    invoice.validationStatus === 'Rejected' ? 'bg-red-100/80 text-red-800' :
+                    invoice.validationStatus === 'Approved' || invoice.validationStatus === 'Final Approved' ? 'bg-green-100/80 text-green-800' :
+                    invoice.validationStatus === 'Rejected' || invoice.validationStatus === 'Manager Rejected' ? 'bg-red-100/80 text-red-800' :
                     'bg-amber-100/80 text-amber-800'
                   }`}>
                     {invoice.validationStatus}
@@ -305,7 +332,7 @@ const InvoiceView = () => {
             Cancel
           </Button>
           
-          {invoice.validationStatus === 'Pending' && (
+          {showApprovalButtons() && (
             <>
               <Button 
                 variant="destructive" 

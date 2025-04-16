@@ -16,11 +16,15 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Protected route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+const ProtectedRoute = ({ children, requiredRole }) => {
+  const { isAuthenticated, hasPermission } = useAuth();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  
+  if (requiredRole && !hasPermission(requiredRole)) {
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;

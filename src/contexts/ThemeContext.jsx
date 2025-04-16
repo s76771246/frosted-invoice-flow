@@ -20,6 +20,9 @@ export const ThemeProvider = ({ children }) => {
     );
     document.body.classList.add(currentTheme.class);
 
+    // Add the gradient background class
+    document.body.style.backgroundImage = `var(--gradient-${currentTheme.id})`;
+
     // Store the current theme in localStorage
     localStorage.setItem('theme', currentTheme.id);
   }, [currentTheme]);
