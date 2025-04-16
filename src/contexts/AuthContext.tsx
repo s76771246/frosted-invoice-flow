@@ -39,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     // In a real app, this would call an API
     try {
-      const foundUser = users.find(u => u.email === email);
+      const foundUser = users.find(u => u.email === email.toLowerCase());
       if (foundUser) {
         setUser(foundUser);
         setIsAuthenticated(true);

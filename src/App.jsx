@@ -63,7 +63,7 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <TooltipProvider>
-            <div className="min-h-screen bg-gradient-brown bg-pattern-dots">
+            <div className="min-h-screen bg-[#262626] bg-pattern-dots">
               <Toaster />
               <Sonner />
               <AppRoutes />

@@ -57,15 +57,15 @@ const Login = () => {
             <div className="flex justify-center mb-4">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/80 to-primary/50 shadow-lg"></div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center text-foreground/90">Account Payable Management</CardTitle>
-            <CardDescription className="text-center text-foreground/70">
+            <CardTitle className="text-2xl font-bold text-center text-white/90">Account Payable Management</CardTitle>
+            <CardDescription className="text-center text-white/70">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground/90">Email</label>
+                <label htmlFor="email" className="text-sm font-medium text-white/90">Email</label>
                 <Input
                   id="email"
                   type="email"
@@ -73,12 +73,12 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/5 backdrop-blur-md border-white/20 text-foreground/90"
+                  className="bg-white/5 backdrop-blur-md border-white/20 text-white/90"
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm font-medium text-foreground/90">Password</label>
+                  <label htmlFor="password" className="text-sm font-medium text-white/90">Password</label>
                   <a href="#" className="text-xs text-primary hover:underline">
                     Forgot Password?
                   </a>
@@ -90,7 +90,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/5 backdrop-blur-md border-white/20 text-foreground/90"
+                  className="bg-white/5 backdrop-blur-md border-white/20 text-white/90"
                 />
               </div>
               <Button type="submit" className="w-full bg-primary/80 hover:bg-primary backdrop-blur-sm" disabled={isLoading}>
@@ -99,16 +99,16 @@ const Login = () => {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <div className="text-sm text-center text-foreground/80">
+            <div className="text-sm text-center text-white/80">
               <span>Demo Accounts:</span>
               <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs bg-white/5 backdrop-blur-md border-white/20 text-foreground/90">
+                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs bg-white/5 backdrop-blur-md border-white/20 text-white/90">
                   CEO
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs bg-white/5 backdrop-blur-md border-white/20 text-foreground/90">
+                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs bg-white/5 backdrop-blur-md border-white/20 text-white/90">
                   Clerk
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('manager@e42.ai')} className="text-xs bg-white/5 backdrop-blur-md border-white/20 text-foreground/90">
+                <Button variant="outline" size="sm" onClick={() => setEmail('manager@e42.ai')} className="text-xs bg-white/5 backdrop-blur-md border-white/20 text-white/90">
                   Manager
                 </Button>
               </div>

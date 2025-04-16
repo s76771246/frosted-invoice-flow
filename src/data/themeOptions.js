@@ -2,9 +2,9 @@
 export const themeOptions = [
   { 
     id: 'brown', 
-    name: 'Brown Glass', 
-    class: 'theme-brown', 
-    gradient: 'bg-gradient-brown' 
+    name: 'Grey Glass', 
+    class: 'theme-grey', 
+    gradient: 'bg-gradient-grey' 
   },
   { 
     id: 'default', 
