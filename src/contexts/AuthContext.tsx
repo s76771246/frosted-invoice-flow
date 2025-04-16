@@ -61,8 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return false;
     
     if (user.role === 'CEO') return true;
-    if (user.role === 'Clerk' && (requiredRole === 'Clerk' || requiredRole === 'ClerkOnly')) return true;
-    if (user.role === 'Manager' && (requiredRole === 'Manager' || requiredRole === 'ManagerOnly')) return true;
+    if (user.role === 'Clerk' && requiredRole === 'Clerk') return true;
+    if (user.role === 'Manager' && requiredRole === 'Manager') return true;
     
     return false;
   };
