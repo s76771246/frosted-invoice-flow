@@ -19,12 +19,12 @@ const ThemeSelector: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="h-9 w-9 glassmorphism-light">
+        <Button variant="outline" size="icon" className="h-9 w-9 ios-glass">
           <Paintbrush className="h-4 w-4" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="glassmorphism border-0">
+      <DropdownMenuContent align="end" className="ios-glass border-0">
         <DropdownMenuLabel>Theme</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup
@@ -35,7 +35,7 @@ const ThemeSelector: React.FC = () => {
             <DropdownMenuRadioItem
               key={theme.id}
               value={theme.id}
-              className="cursor-pointer"
+              className="cursor-pointer hover:bg-white/30"
             >
               <div className="flex items-center gap-2">
                 <div className={`h-4 w-4 rounded-full ${theme.gradient}`} />

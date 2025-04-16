@@ -66,11 +66,11 @@
     --ring: 221.2 83% 53.3%;
   }
 
-  .theme-amber {
-    --background: 36 40% 98%;
-    --foreground: 36 84% 4.9%;
-    --primary: 36 83% 53.3%;
-    --ring: 36 83% 53.3%;
+  .theme-brown {
+    --background: 30 30% 90%;
+    --foreground: 30 10% 15%;
+    --primary: 30 70% 45%;
+    --ring: 30 70% 45%;
   }
 }
 
@@ -80,7 +80,7 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-amber-200/60 to-amber-100/60 text-foreground min-h-screen;
+    @apply text-foreground min-h-screen;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -91,7 +91,7 @@
   }
   
   .glassmorphism-dark {
-    @apply bg-white/10 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg;
+    @apply bg-black/10 backdrop-blur-lg border border-white/30 rounded-xl shadow-lg;
   }
   
   .glassmorphism-light {
@@ -110,6 +110,18 @@
     @apply bg-white/20 backdrop-blur-xl rounded-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.1)];
   }
 
+  .ios-glass {
+    @apply bg-white/40 backdrop-blur-xl border border-white/30 rounded-3xl shadow-lg;
+  }
+
+  .ios-card {
+    @apply bg-black/15 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-lg;
+  }
+
+  .modern-glass {
+    @apply bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg;
+  }
+
   .bg-gradient-gold {
     @apply bg-gradient-to-br from-amber-300/40 via-amber-200/40 to-yellow-100/40;
   }
@@ -126,12 +138,16 @@
     @apply bg-gradient-to-br from-amber-400/40 via-orange-300/40 to-rose-200/40;
   }
 
+  .bg-gradient-brown {
+    @apply bg-gradient-to-br from-amber-700/20 via-amber-500/15 to-yellow-300/20;
+  }
+
   .status-tile {
     @apply floating-glass p-5 flex flex-col space-y-2;
   }
   
   .invoice-item {
-    @apply glassmorphism-light p-4 my-2 hover:scale-[1.01] transition-all duration-200 cursor-pointer;
+    @apply modern-glass p-4 my-2 hover:scale-[1.01] transition-all duration-200 cursor-pointer;
   }
   
   /* Table styling for glassmorphism */
@@ -180,4 +196,22 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.6);
+}
+
+/* Background patterns */
+.bg-pattern-dots {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-pattern-grid {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-blur-effect {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(10px);
 }
