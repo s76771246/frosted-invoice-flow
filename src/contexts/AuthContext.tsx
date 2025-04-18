@@ -8,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  hasPermission: (requiredRole: UserRole) => boolean;
+  hasPermission: (requiredRole: UserRole | UserRole[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -57,14 +57,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(false);
   };
 
-  const hasPermission = (requiredRole: UserRole): boolean => {
+  const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!user) return false;
     
-    if (user.role === 'CEO') return true;
-    if (user.role === 'Clerk' && requiredRole === 'Clerk') return true;
-    if (user.role === 'Manager' && requiredRole === 'Manager') return true;
+    // Convert to array for easier handling
+    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     
-    return false;
+    // CEO has access to everything
+    if (user.role === 'CEO') return true;
+    
+    // Check if user's role is in the required roles
+    return roles.includes(user.role);
   };
 
   return (

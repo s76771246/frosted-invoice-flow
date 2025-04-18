@@ -11,15 +11,21 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import InvoiceView from "./pages/InvoiceView";
 import NotFound from "./pages/NotFound";
+import Payments from "./pages/Payments";
+import { UserRole } from "./types";
 
 const queryClient = new QueryClient();
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+// Protected route component with role checking
+const ProtectedRoute = ({ children, requiredRoles = [] }: { children: React.ReactNode, requiredRoles?: UserRole[] }) => {
+  const { isAuthenticated, user } = useAuth();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  
+  if (requiredRoles.length > 0 && user && !requiredRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
@@ -46,6 +52,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/payments" 
+        element={
+          <ProtectedRoute requiredRoles={['CEO', 'Manager']}>
+            <Payments />
+          </ProtectedRoute>
+        } 
+      />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -58,9 +72,11 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AppRoutes />
+            <div className="min-h-screen bg-[#f0f0f0] bg-opacity-85 text-black">
+              <Toaster />
+              <Sonner />
+              <AppRoutes />
+            </div>
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>

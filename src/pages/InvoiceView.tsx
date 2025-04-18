@@ -35,14 +35,14 @@ const InvoiceView = () => {
 
   if (!invoice) {
     return (
-      <div className={`min-h-screen ${currentTheme.gradient}`}>
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <Header />
           <div className="flex items-center space-x-4 mb-6">
-            <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm">
+            <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm" className="true-glass text-black">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
             </Button>
-            <h1 className="text-3xl font-bold">Invoice Not Found</h1>
+            <h1 className="text-3xl font-bold text-black">Invoice Not Found</h1>
           </div>
         </div>
       </div>
@@ -78,12 +78,38 @@ const InvoiceView = () => {
     
     let updatedInvoice = { ...invoice, items };
     
-    if (action === 'approve') {
-      updatedInvoice.validationStatus = 'Approved';
-      updatedInvoice.validationRemark = 'Invoice approved by ' + user?.name;
-    } else if (action === 'reject') {
-      updatedInvoice.validationStatus = 'Rejected';
-      updatedInvoice.validationRemark = 'Invoice rejected by ' + user?.name;
+    if (user?.role === 'Clerk') {
+      if (action === 'approve') {
+        updatedInvoice.validationStatus = 'Approved';
+        updatedInvoice.validationRemark = 'Invoice approved by Clerk: ' + user.name;
+        updatedInvoice.clerkApproved = true;
+      } else if (action === 'reject') {
+        updatedInvoice.validationStatus = 'Rejected';
+        updatedInvoice.validationRemark = 'Invoice rejected by Clerk: ' + user.name;
+        updatedInvoice.clerkApproved = false;
+      }
+    } else if (user?.role === 'Manager') {
+      if (action === 'approve') {
+        updatedInvoice.validationStatus = 'Final Approved';
+        updatedInvoice.validationRemark = 'Invoice approved by Manager: ' + user.name;
+        updatedInvoice.managerApproved = true;
+      } else if (action === 'reject') {
+        updatedInvoice.validationStatus = 'Manager Rejected';
+        updatedInvoice.validationRemark = 'Invoice rejected by Manager: ' + user.name;
+        updatedInvoice.managerApproved = false;
+      }
+    } else if (user?.role === 'CEO') {
+      if (action === 'approve') {
+        updatedInvoice.validationStatus = 'Final Approved';
+        updatedInvoice.validationRemark = 'Invoice approved by CEO: ' + user.name;
+        updatedInvoice.clerkApproved = true;
+        updatedInvoice.managerApproved = true;
+      } else if (action === 'reject') {
+        updatedInvoice.validationStatus = 'Rejected';
+        updatedInvoice.validationRemark = 'Invoice rejected by CEO: ' + user.name;
+        updatedInvoice.clerkApproved = false;
+        updatedInvoice.managerApproved = false;
+      }
     }
     
     const invoiceIndex = mockInvoices.findIndex(inv => inv.id === invoice.id);
@@ -103,125 +129,139 @@ const InvoiceView = () => {
     }, 1500);
   };
 
+  const showApprovalButtons = () => {
+    if (user?.role === 'Clerk' && invoice.validationStatus === 'Pending') {
+      return true;
+    }
+    if (user?.role === 'Manager' && invoice.validationStatus === 'Approved' && !invoice.managerApproved) {
+      return true;
+    }
+    if (user?.role === 'CEO') {
+      return invoice.validationStatus !== 'Final Approved' && invoice.validationStatus !== 'Paid';
+    }
+    return false;
+  };
+
   return (
-    <div className={`min-h-screen ${currentTheme.gradient}`}>
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
         <div className="flex items-center space-x-4 mb-6">
-          <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm">
+          <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm" className="true-glass text-black">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold">Invoice Details: {invoice.invoiceNo}</h1>
+          <h1 className="text-3xl font-bold text-black">Invoice Details: {invoice.invoiceNo}</h1>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="glassmorphism p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Invoice Document</h2>
-            <div className="flex items-center justify-center bg-gray-200 rounded-lg h-96">
+          <div className="true-glass p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4 text-black">Invoice Document</h2>
+            <div className="flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-lg h-96">
               <div className="text-center p-8">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <p className="mt-4 text-sm text-gray-500 font-mono">{invoice.invoiceDoc}</p>
-                <Button className="mt-4" variant="outline">View PDF Document</Button>
+                <Button className="mt-4 true-glass text-black" variant="outline">View PDF Document</Button>
               </div>
             </div>
           </div>
           
-          <div className="glassmorphism p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
+          <div className="true-glass p-6 rounded-lg">
+            <h2 className="text-xl font-bold mb-4 text-black">Invoice Details</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Invoice No</label>
+                  <label className="text-sm font-medium text-black">Invoice No</label>
                   <Input 
                     value={invoice.invoiceNo} 
                     onChange={(e) => handleInputChange('invoiceNo', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Invoice Date</label>
+                  <label className="text-sm font-medium text-black">Invoice Date</label>
                   <Input 
                     value={invoice.invoiceDate} 
                     onChange={(e) => handleInputChange('invoiceDate', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Title</label>
+                  <label className="text-sm font-medium text-black">Title</label>
                   <Input 
                     value={invoice.title} 
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">PO No</label>
+                  <label className="text-sm font-medium text-black">PO No</label>
                   <Input 
                     value={invoice.poNo} 
                     onChange={(e) => handleInputChange('poNo', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Supplier</label>
+                  <label className="text-sm font-medium text-black">Supplier</label>
                   <Input 
                     value={invoice.supplierName} 
                     onChange={(e) => handleInputChange('supplierName', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Supplier Code</label>
+                  <label className="text-sm font-medium text-black">Supplier Code</label>
                   <Input 
                     value={invoice.supplierCode} 
                     onChange={(e) => handleInputChange('supplierCode', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Currency</label>
+                  <label className="text-sm font-medium text-black">Currency</label>
                   <Input 
                     value="INR"
                     readOnly
-                    className="bg-gray-100 border border-gray-300"
+                    className="bg-gray-100 border border-white/30"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Total Value</label>
+                  <label className="text-sm font-medium text-black">Total Value</label>
                   <Input 
                     value={invoice.invoiceValue.toString()} 
                     onChange={(e) => handleInputChange('invoiceValue', parseFloat(e.target.value))}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <div className={`px-3 py-2 rounded-md border border-gray-300 font-medium ${
-                    invoice.validationStatus === 'Approved' ? 'bg-green-100 text-green-800' :
-                    invoice.validationStatus === 'Rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-amber-100 text-amber-800'
+                  <label className="text-sm font-medium text-black">Status</label>
+                  <div className={`px-3 py-2 rounded-md border border-white/30 font-medium ${
+                    invoice.validationStatus === 'Approved' || invoice.validationStatus === 'Final Approved' ? 'bg-green-100/80 text-green-800' :
+                    invoice.validationStatus === 'Rejected' || invoice.validationStatus === 'Manager Rejected' ? 'bg-red-100/80 text-red-800' :
+                    invoice.validationStatus === 'Paid' ? 'bg-blue-100/80 text-blue-800' :
+                    'bg-amber-100/80 text-amber-800'
                   }`}>
                     {invoice.validationStatus}
                   </div>
                 </div>
                 
                 <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-medium">Remarks</label>
+                  <label className="text-sm font-medium text-black">Remarks</label>
                   <Textarea 
                     value={invoice.validationRemark} 
                     onChange={(e) => handleInputChange('validationRemark', e.target.value)}
-                    className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                     rows={3}
                   />
                 </div>
@@ -230,16 +270,16 @@ const InvoiceView = () => {
           </div>
         </div>
         
-        <div className="glassmorphism p-6 rounded-lg mb-6">
-          <h2 className="text-xl font-bold mb-4">Line Items</h2>
+        <div className="true-glass p-6 rounded-lg mb-6">
+          <h2 className="text-xl font-bold mb-4 text-black">Line Items</h2>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-white/10 text-left">
-                  <th className="p-2 border-b">Description</th>
-                  <th className="p-2 border-b text-right">Quantity</th>
-                  <th className="p-2 border-b text-right">Rate</th>
-                  <th className="p-2 border-b text-right">Amount</th>
+                  <th className="p-2 border-b text-black">Description</th>
+                  <th className="p-2 border-b text-right text-black">Quantity</th>
+                  <th className="p-2 border-b text-right text-black">Rate</th>
+                  <th className="p-2 border-b text-right text-black">Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -249,7 +289,7 @@ const InvoiceView = () => {
                       <Input 
                         value={item.description} 
                         onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                        className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                        className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-black"
                       />
                     </td>
                     <td className="p-2">
@@ -257,7 +297,7 @@ const InvoiceView = () => {
                         type="number"
                         value={item.quantity} 
                         onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
+                        className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right text-black"
                       />
                     </td>
                     <td className="p-2">
@@ -265,10 +305,10 @@ const InvoiceView = () => {
                         type="number"
                         value={item.rate} 
                         onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                        className="bg-white/10 border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
+                        className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right text-black"
                       />
                     </td>
-                    <td className="p-2 text-right font-medium">
+                    <td className="p-2 text-right font-medium text-black">
                       {formatCurrency(item.amount)}
                     </td>
                   </tr>
@@ -276,8 +316,8 @@ const InvoiceView = () => {
               </tbody>
               <tfoot>
                 <tr className="bg-white/10 font-bold">
-                  <td colSpan={3} className="p-2 text-right">Total:</td>
-                  <td className="p-2 text-right">
+                  <td colSpan={3} className="p-2 text-right text-black">Total:</td>
+                  <td className="p-2 text-right text-black">
                     {formatCurrency(
                       items.reduce((sum, item) => sum + item.amount, 0)
                     )}
@@ -288,7 +328,7 @@ const InvoiceView = () => {
           </div>
           
           <Button 
-            className="mt-4"
+            className="mt-4 true-glass text-black"
             variant="outline"
             onClick={() => setItems([...items, { description: '', quantity: 1, rate: 0, amount: 0 }])}
           >
@@ -300,11 +340,12 @@ const InvoiceView = () => {
           <Button 
             variant="outline" 
             onClick={() => navigate('/dashboard')}
+            className="true-glass text-black"
           >
             Cancel
           </Button>
           
-          {invoice.validationStatus === 'Pending' && (
+          {showApprovalButtons() && (
             <>
               <Button 
                 variant="destructive" 

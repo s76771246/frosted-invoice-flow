@@ -1,56 +1,57 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import ThemeSelector from './ThemeSelector';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import ThemeSelector from '@/components/ThemeSelector';
+import { LogOut, Home, CreditCard } from 'lucide-react';
 
-const Header: React.FC = () => {
+const Header = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const handleViewPayments = () => {
+    navigate('/payments');
+  };
 
   return (
-    <header className="sticky top-0 z-10 glassmorphism-dark backdrop-blur-xl border-b border-white/20 mb-6">
-      <div className="container mx-auto flex justify-between items-center py-4">
-        <div className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
-          <h1 className="text-xl font-bold">AP Management</h1>
+    <header className="true-glass rounded-xl border border-white/30 p-4 flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <div className="h-10 w-10 rounded-full bg-primary/80 flex items-center justify-center">
+          <span className="font-bold text-primary-foreground">{user?.name?.charAt(0) || 'A'}</span>
         </div>
+        <div>
+          <h2 className="font-semibold text-black">{user?.name || 'User'}</h2>
+          <p className="text-sm text-black/70">{user?.role || 'Guest'}</p>
+        </div>
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Link to="/dashboard">
+          <Button variant="outline" size="sm" className="true-glass text-black">
+            <Home className="h-4 w-4 mr-2" />
+            Dashboard
+          </Button>
+        </Link>
         
-        <div className="flex items-center space-x-4">
-          <ThemeSelector />
-          
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full bg-white/10">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar || ''} alt={user.name} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {user.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="glassmorphism border-0" align="end">
-                <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
-                <DropdownMenuLabel className="text-xs text-gray-500">{user.role}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+        {(user?.role === 'CEO' || user?.role === 'Manager') && (
+          <Button onClick={handleViewPayments} variant="outline" size="sm" className="true-glass text-black">
+            <CreditCard className="h-4 w-4 mr-2" />
+            Payments
+          </Button>
+        )}
+        
+        <ThemeSelector />
+        
+        <Button onClick={handleLogout} variant="outline" size="sm" className="true-glass text-black">
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
     </header>
   );

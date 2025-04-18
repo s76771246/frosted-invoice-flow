@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -50,10 +49,14 @@ const Dashboard = () => {
         // Clerks see all invoices
         filtered = filtered;
       } else if (user?.role === 'Manager') {
-        // Managers only see approved invoices
-        filtered = filtered.filter(inv => inv.validationStatus === 'Approved');
+        // Managers only see clerk-approved invoices
+        filtered = filtered.filter(inv => inv.validationStatus === 'Approved' && inv.clerkApproved);
+      } else if (user?.role === 'CEO') {
+        // CEO sees all invoices
+        filtered = filtered;
       }
       
+      // Apply other filters
       if (filters.month !== 'all') {
         filtered = filtered.filter(invoice => {
           const invoiceMonth = invoice.invoiceDate.split('/')[0];
@@ -61,31 +64,16 @@ const Dashboard = () => {
         });
       }
       
-      if (filters.quarter !== 'all') {
-        filtered = filtered.filter(invoice => {
-          const month = parseInt(invoice.invoiceDate.split('/')[0]);
-          const quarter = Math.ceil(month / 3);
-          return `Q${quarter}` === filters.quarter;
-        });
-      }
-
-      if (filters.year !== 'all') {
-        filtered = filtered.filter(invoice => {
-          const invoiceYear = invoice.invoiceDate.split('/')[2];
-          return invoiceYear === filters.year;
-        });
-      }
-
-      if (filters.vendor !== 'all') {
-        filtered = filtered.filter(invoice => 
-          invoice.supplierName === filters.vendor
-        );
-      }
-      
       const receivedCount = filtered.length;
-      const approvedCount = filtered.filter(inv => inv.validationStatus === 'Approved').length;
+      const approvedCount = filtered.filter(inv => 
+        inv.validationStatus === 'Approved' || 
+        inv.validationStatus === 'Final Approved'
+      ).length;
       const pendingCount = filtered.filter(inv => inv.validationStatus === 'Pending').length;
-      const rejectedCount = filtered.filter(inv => inv.validationStatus === 'Rejected').length;
+      const rejectedCount = filtered.filter(inv => 
+        inv.validationStatus === 'Rejected' || 
+        inv.validationStatus === 'Manager Rejected'
+      ).length;
       
       setStatusTiles([
         {
@@ -126,42 +114,27 @@ const Dashboard = () => {
       // Clerks see all invoices
       result = result;
     } else if (user?.role === 'Manager') {
-      // Managers only see approved invoices
-      result = result.filter(inv => inv.validationStatus === 'Approved');
+      // Managers only see clerk-approved invoices
+      result = result.filter(inv => inv.validationStatus === 'Approved' && inv.clerkApproved);
     }
 
+    // Apply tab filter
     if (activeTab !== 'all') {
-      result = result.filter(invoice => 
-        invoice.validationStatus.toLowerCase() === activeTab.toLowerCase()
-      );
-    }
-
-    if (filters.month !== 'all') {
-      result = result.filter(invoice => {
-        const invoiceMonth = invoice.invoiceDate.split('/')[0];
-        return invoiceMonth === filters.month;
-      });
-    }
-
-    if (filters.quarter !== 'all') {
-      result = result.filter(invoice => {
-        const month = parseInt(invoice.invoiceDate.split('/')[0]);
-        const quarter = Math.ceil(month / 3);
-        return `Q${quarter}` === filters.quarter;
-      });
-    }
-
-    if (filters.year !== 'all') {
-      result = result.filter(invoice => {
-        const invoiceYear = invoice.invoiceDate.split('/')[2];
-        return invoiceYear === filters.year;
-      });
-    }
-
-    if (filters.vendor !== 'all') {
-      result = result.filter(invoice => 
-        invoice.supplierName === filters.vendor
-      );
+      if (activeTab === 'approved') {
+        result = result.filter(invoice => 
+          invoice.validationStatus === 'Approved' || 
+          invoice.validationStatus === 'Final Approved'
+        );
+      } else if (activeTab === 'rejected') {
+        result = result.filter(invoice => 
+          invoice.validationStatus === 'Rejected' || 
+          invoice.validationStatus === 'Manager Rejected'
+        );
+      } else {
+        result = result.filter(invoice => 
+          invoice.validationStatus.toLowerCase() === activeTab.toLowerCase()
+        );
+      }
     }
 
     setFilteredInvoices(result);
@@ -204,7 +177,6 @@ const Dashboard = () => {
     window.dispatchEvent(event);
   };
 
-  // Listen for invoice updates to recalculate status counts
   useEffect(() => {
     const handleInvoiceUpdate = () => {
       // This will trigger the useEffect that calculates status counts
@@ -248,7 +220,7 @@ const Dashboard = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
         <div className="glass-panel p-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Invoice Status Overview</h2>
+          <h2 className="text-xl font-bold mb-4 text-black">Invoice Status Overview</h2>
           <div className="h-80 w-full">
             <BarChart
               width={1000}
@@ -272,7 +244,7 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="glass-panel p-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Monthly Trends</h2>
+          <h2 className="text-xl font-bold mb-4 text-black">Monthly Trends</h2>
           <div className="h-80 w-full">
             <LineChart
               width={500}
@@ -295,7 +267,7 @@ const Dashboard = () => {
         </div>
 
         <div className="glass-panel p-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Vendor Distribution</h2>
+          <h2 className="text-xl font-bold mb-4 text-black">Vendor Distribution</h2>
           <div className="h-80 w-full flex justify-center">
             <PieChart width={400} height={300}>
               <Pie
@@ -324,60 +296,94 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderClerkManagerDashboard = () => {
-    const isManager = user?.role === 'Manager';
-    const title = isManager ? "Manager Invoice Management" : "Invoice Management";
-    const createButtonVisible = !isManager;
-    
-    return (
-      <>
-        <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
-        
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">{title}</h1>
-          {createButtonVisible && (
-            <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300">
-              Create New Invoice
-            </Button>
-          )}
-        </div>
-        
-        <div className="glass-panel p-6 mb-6">
-          <FilterBar
-            monthOptions={monthOptions}
-            quarterOptions={quarterOptions}
-            yearOptions={yearOptions}
-            vendorOptions={vendorOptions}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
-        </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="glass-panel p-1">
-            <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
-            <TabsTrigger value="pending" className="data-[state=active]:bg-white/60">Pending</TabsTrigger>
-            <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
-            <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
-        <div className="glass-panel">
-          <InvoiceTable 
-            invoices={filteredInvoices}
-            onInvoiceClick={handleInvoiceClick}
-          />
-        </div>
-        
-        <InvoiceModal
-          invoice={selectedInvoice}
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSaveInvoice}
+  const renderManagerDashboard = () => (
+    <>
+      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
+      
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-black">Manager Approval Queue</h1>
+      </div>
+      
+      <div className="glass-panel p-6 mb-6">
+        <FilterBar
+          monthOptions={monthOptions}
+          quarterOptions={quarterOptions}
+          yearOptions={yearOptions}
+          vendorOptions={vendorOptions}
+          filters={filters}
+          onFilterChange={handleFilterChange}
         />
-      </>
-    );
-  };
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="glass-panel p-1">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/60 text-black">All Invoices</TabsTrigger>
+          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60 text-black">Awaiting Approval</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      <div className="glass-panel">
+        <InvoiceTable 
+          invoices={filteredInvoices}
+          onInvoiceClick={handleInvoiceClick}
+        />
+      </div>
+      
+      <InvoiceModal
+        invoice={selectedInvoice}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveInvoice}
+      />
+    </>
+  );
+
+  const renderClerkDashboard = () => (
+    <>
+      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
+      
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-black">Invoice Management</h1>
+        <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300 text-black">
+          Create New Invoice
+        </Button>
+      </div>
+      
+      <div className="glass-panel p-6 mb-6">
+        <FilterBar
+          monthOptions={monthOptions}
+          quarterOptions={quarterOptions}
+          yearOptions={yearOptions}
+          vendorOptions={vendorOptions}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="glass-panel p-1">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/60 text-black">All Invoices</TabsTrigger>
+          <TabsTrigger value="pending" className="data-[state=active]:bg-white/60 text-black">Pending</TabsTrigger>
+          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60 text-black">Approved</TabsTrigger>
+          <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60 text-black">Rejected</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      <div className="glass-panel">
+        <InvoiceTable 
+          invoices={filteredInvoices}
+          onInvoiceClick={handleInvoiceClick}
+        />
+      </div>
+      
+      <InvoiceModal
+        invoice={selectedInvoice}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveInvoice}
+      />
+    </>
+  );
 
   return (
     <div className="min-h-screen">
@@ -387,7 +393,9 @@ const Dashboard = () => {
         <main className="mt-8">
           {user?.role === 'CEO' 
             ? renderCEODashboard() 
-            : renderClerkManagerDashboard()}
+            : user?.role === 'Manager'
+              ? renderManagerDashboard()
+              : renderClerkDashboard()}
         </main>
       </div>
     </div>

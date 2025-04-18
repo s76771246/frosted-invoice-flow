@@ -1,4 +1,3 @@
-
 export type UserRole = 'CEO' | 'Manager' | 'Clerk';
 
 export interface User {
@@ -9,7 +8,7 @@ export interface User {
   avatar?: string;
 }
 
-export type InvoiceStatus = 'Approved' | 'Pending' | 'Rejected' | 'Received' | 'Processed' | 'Matched' | 'Not Matched';
+export type InvoiceStatus = 'Approved' | 'Pending' | 'Rejected' | 'Received' | 'Processed' | 'Matched' | 'Not Matched' | 'Final Approved' | 'Manager Rejected' | 'Paid';
 
 export interface InvoiceItem {
   description: string;
@@ -37,6 +36,10 @@ export interface Invoice {
   items?: InvoiceItem[];
   createdAt: string;
   updatedAt: string;
+  clerkApproved?: boolean;
+  managerApproved?: boolean;
+  isPaid?: boolean;
+  paymentDate?: string;
 }
 
 export interface StatusTile {
