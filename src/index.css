@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,8 +11,8 @@
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
     
-    --primary: 220 13% 69%; /* Subtle blue-grey primary color */
-    --primary-foreground: 0 0% 0%;
+    --primary: 263 60% 60%; /* Vibrant purple primary color */
+    --primary-foreground: 0 0% 100%;
     
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 0%;
@@ -23,13 +24,13 @@
   .theme-gold {
     --background: 43 80% 96%;
     --foreground: 0 0% 0%;
-    --primary: 36 90% 45%;
+    --primary: 36 90% 55%;
   }
 
   .theme-green {
-    --background: 120 40% 98%;
+    --background: 152 40% 98%;
     --foreground: 0 0% 0%;
-    --primary: 150 63% 43%;
+    --primary: 160 63% 43%;
   }
 
   .theme-blue {
@@ -38,10 +39,10 @@
     --primary: 221.2 83% 53.3%;
   }
 
-  .theme-grey {
-    --background: 0 0% 90%;
+  .theme-purple {
+    --background: 270 40% 98%;
     --foreground: 0 0% 0%;
-    --primary: 0 0% 45%;
+    --primary: 263 60% 60%;
   }
 }
 
@@ -100,11 +101,15 @@
   }
 
   .bg-gradient-green {
-    @apply bg-gradient-to-br from-green-300/40 via-emerald-200/40 to-teal-100/40;
+    @apply bg-gradient-to-br from-emerald-300/40 via-teal-200/40 to-green-100/40;
   }
 
   .bg-gradient-primary {
     @apply bg-gradient-to-br from-blue-400/40 via-indigo-300/40 to-purple-200/40;
+  }
+
+  .bg-gradient-purple {
+    @apply bg-gradient-to-br from-purple-400/40 via-violet-300/40 to-fuchsia-200/40;
   }
 
   .bg-gradient-amber {

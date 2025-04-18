@@ -1,10 +1,10 @@
 
 export const themeOptions = [
   { 
-    id: 'brown', 
-    name: 'Grey Glass', 
-    class: 'theme-grey', 
-    gradient: 'bg-gradient-grey' 
+    id: 'purple', 
+    name: 'Vibrant Purple', 
+    class: 'theme-purple', 
+    gradient: 'bg-gradient-purple' 
   },
   { 
     id: 'default', 

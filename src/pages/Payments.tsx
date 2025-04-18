@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { CreditCard, CheckCircle } from 'lucide-react';
-import { Invoice } from '@/types';
+import { Invoice, InvoiceStatus } from '@/types';
 import { mockInvoices } from '@/data/mockData';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate } from '@/utils/formatters';
@@ -30,11 +30,11 @@ const Payments = () => {
 
   const handlePayInvoice = (invoice: Invoice) => {
     // Update the invoice status
-    const updatedInvoice = { 
+    const updatedInvoice: Invoice = { 
       ...invoice, 
       isPaid: true,
       paymentDate: new Date().toLocaleDateString(),
-      validationStatus: 'Paid',
+      validationStatus: 'Paid' as InvoiceStatus,
       validationRemark: `Payment processed by ${user?.name} on ${new Date().toLocaleDateString()}`
     };
     
@@ -81,7 +81,7 @@ const Payments = () => {
                     </div>
                     <Button 
                       onClick={() => handlePayInvoice(invoice)}
-                      className="bg-green-600 hover:bg-green-700 true-glass"
+                      className="bg-purple-600 hover:bg-purple-700 true-glass"
                     >
                       <CreditCard className="mr-2 h-4 w-4" /> Process Payment
                     </Button>
