@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -28,44 +27,6 @@ const Dashboard = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusTiles, setStatusTiles] = useState<StatusTile[]>([]);
-
-  useEffect(() => {
-    const calculateStatusCounts = () => {
-      const receivedCount = mockInvoices.length;
-      const approvedCount = mockInvoices.filter(inv => inv.validationStatus === 'Approved').length;
-      const pendingCount = mockInvoices.filter(inv => inv.validationStatus === 'Pending').length;
-      const rejectedCount = mockInvoices.filter(inv => inv.validationStatus === 'Rejected').length;
-      
-      setStatusTiles([
-        {
-          status: 'Received',
-          count: receivedCount,
-          color: 'purple',
-          icon: 'inbox',
-        },
-        {
-          status: 'Approved',
-          count: approvedCount,
-          color: 'green',
-          icon: 'check-circle',
-        },
-        {
-          status: 'Pending',
-          count: pendingCount,
-          color: 'amber',
-          icon: 'clock',
-        },
-        {
-          status: 'Rejected',
-          count: rejectedCount,
-          color: 'red',
-          icon: 'x-circle',
-        },
-      ]);
-    };
-    
-    calculateStatusCounts();
-  }, [mockInvoices]);
 
   useEffect(() => {
     let result = mockInvoices;
@@ -107,6 +68,40 @@ const Dashboard = () => {
     setFilteredInvoices(result);
   }, [activeTab, filters]);
 
+  useEffect(() => {
+    const receivedCount = filteredInvoices.length;
+    const approvedCount = filteredInvoices.filter(inv => inv.validationStatus === 'Approved').length;
+    const pendingCount = filteredInvoices.filter(inv => inv.validationStatus === 'Pending').length;
+    const rejectedCount = filteredInvoices.filter(inv => inv.validationStatus === 'Rejected').length;
+    
+    setStatusTiles([
+      {
+        status: 'Received',
+        count: receivedCount,
+        color: 'purple',
+        icon: 'inbox',
+      },
+      {
+        status: 'Approved',
+        count: approvedCount,
+        color: 'green',
+        icon: 'check-circle',
+      },
+      {
+        status: 'Pending',
+        count: pendingCount,
+        color: 'amber',
+        icon: 'clock',
+      },
+      {
+        status: 'Rejected',
+        count: rejectedCount,
+        color: 'red',
+        icon: 'x-circle',
+      },
+    ]);
+  }, [filteredInvoices]);
+
   const handleFilterChange = (type: keyof FilterState, value: string) => {
     setFilters(prev => ({ ...prev, [type]: value }));
   };
@@ -146,7 +141,7 @@ const Dashboard = () => {
   const monthlyData = [
     { month: 'Jan', invoices: 30, amount: 45000 },
     { month: 'Feb', invoices: 25, amount: 38000 },
-    { month: 'Mar', invoices: 35, amount: 52000 },
+    { month: 'Mar', invoices: 35, invoices: 52000 },
     { month: 'Apr', invoices: 40, amount: 60000 },
     { month: 'May', invoices: 28, amount: 42000 },
     { month: 'Jun', invoices: 32, amount: 48000 }
