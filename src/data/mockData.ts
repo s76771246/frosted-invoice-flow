@@ -1,4 +1,3 @@
-
 import { Invoice, StatusTile, FilterOption, User, ThemeOption } from '../types';
 
 export const currentUser: User = {
@@ -30,25 +29,25 @@ export const users: User[] = [
 export const statusTiles: StatusTile[] = [
   {
     status: 'Received',
-    count: 24,
+    count: 45,
     color: 'blue',
     icon: 'inbox',
   },
   {
     status: 'Approved',
-    count: 16,
+    count: 28,
     color: 'green',
     icon: 'check-circle',
   },
   {
     status: 'Pending',
-    count: 8,
+    count: 15,
     color: 'amber',
     icon: 'clock',
   },
   {
     status: 'Rejected',
-    count: 3,
+    count: 8,
     color: 'red',
     icon: 'x-circle',
   },
@@ -225,7 +224,6 @@ export const mockInvoices: Invoice[] = [
     createdAt: '2024-01-24T11:45:00.000Z',
     updatedAt: '2024-01-26T09:20:00.000Z',
   },
-  // Adding additional dummy records
   {
     id: '11',
     uniqueId: '11fa3492-5a54-4b2d-9371-f0d5a8b9e123',
@@ -480,6 +478,69 @@ export const mockInvoices: Invoice[] = [
     supplierName: 'TechServ Maintenance',
     createdAt: '2024-04-25T09:15:00.000Z',
     updatedAt: '2024-04-28T14:30:00.000Z',
+  },
+  {
+    id: '26',
+    uniqueId: 'j9k0l1m2-n3o4-p5q6-r7s8-t9u0v1w2x3y4',
+    title: 'Research Project',
+    poNo: 'PO-987654',
+    validationStatus: 'Pending',
+    validationRemark: '',
+    invoiceNo: 'RP-INV-45678',
+    invoiceDate: '08/15/2024',
+    invoiceDoc: 'T144209871_RP-INV-45678_RESEARCH.pdf',
+    invoiceCurrency: 'INR',
+    invoiceValue: 75000.00,
+    supplierCode: 'RESEARCH',
+    supplierName: 'Research Solutions Inc',
+    createdAt: '2024-08-12T10:45:00.000Z',
+    updatedAt: '2024-08-15T15:30:00.000Z',
+    items: [
+      { description: 'Market Research', quantity: 1, rate: 45000, amount: 45000 },
+      { description: 'Data Analysis', quantity: 1, rate: 30000, amount: 30000 }
+    ]
+  },
+  {
+    id: '27',
+    uniqueId: 'z5a6b7c8-d9e0-f1g2-h3i4-j5k6l7m8n9o0',
+    title: 'Cloud Infrastructure',
+    poNo: 'PO-123987',
+    validationStatus: 'Approved',
+    validationRemark: 'Approved by Manager',
+    invoiceNo: 'CI-INV-78901',
+    invoiceDate: '08/20/2024',
+    invoiceDoc: 'T144205678_CI-INV-78901_CLOUD.pdf',
+    invoiceCurrency: 'INR',
+    invoiceValue: 95000.00,
+    supplierCode: 'CLOUDPRO',
+    supplierName: 'Cloud Pro Services',
+    createdAt: '2024-08-18T09:30:00.000Z',
+    updatedAt: '2024-08-20T14:15:00.000Z',
+    items: [
+      { description: 'Cloud Servers', quantity: 10, rate: 8500, amount: 85000 },
+      { description: 'Support Services', quantity: 1, rate: 10000, amount: 10000 }
+    ]
+  },
+  {
+    id: '28',
+    uniqueId: 'p1q2r3s4-t5u6-v7w8-x9y0-z1a2b3c4d5e6',
+    title: 'Security Systems',
+    poNo: 'PO-456789',
+    validationStatus: 'Rejected',
+    validationRemark: 'Insufficient documentation',
+    invoiceNo: 'SS-INV-12345',
+    invoiceDate: '08/25/2024',
+    invoiceDoc: 'T144203456_SS-INV-12345_SECURITY.pdf',
+    invoiceCurrency: 'INR',
+    invoiceValue: 65000.00,
+    supplierCode: 'SECPRO',
+    supplierName: 'Security Pro Systems',
+    createdAt: '2024-08-22T11:20:00.000Z',
+    updatedAt: '2024-08-25T16:45:00.000Z',
+    items: [
+      { description: 'CCTV System', quantity: 1, rate: 45000, amount: 45000 },
+      { description: 'Access Control', quantity: 1, rate: 20000, amount: 20000 }
+    ]
   }
 ];
 
