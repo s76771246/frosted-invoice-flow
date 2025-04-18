@@ -12,6 +12,13 @@ export const currentUser = {
 export const users = [
   currentUser,
   {
+    id: '2',
+    name: 'Jane Smith',
+    role: 'Manager',
+    email: 'manager@e42.ai',
+    avatar: '',
+  },
+  {
     id: '3',
     name: 'Robert Johnson',
     role: 'Clerk',
