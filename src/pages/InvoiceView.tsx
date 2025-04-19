@@ -124,6 +124,12 @@ const InvoiceView = () => {
     
     setInvoice(updatedInvoice);
     
+    // This causes a window event to be dispatched that will force the tiles to update
+    const statusChangeEvent = new CustomEvent('invoice-status-change', {
+      detail: { invoice: updatedInvoice }
+    });
+    window.dispatchEvent(statusChangeEvent);
+    
     setTimeout(() => {
       navigate('/dashboard');
     }, 1500);
@@ -350,6 +356,7 @@ const InvoiceView = () => {
               <Button 
                 variant="destructive" 
                 onClick={() => handleAction('reject')}
+                className="bg-red-500 hover:bg-red-600"
               >
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
@@ -357,7 +364,7 @@ const InvoiceView = () => {
               <Button 
                 variant="default" 
                 onClick={() => handleAction('approve')}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-500 hover:bg-green-600"
               >
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>

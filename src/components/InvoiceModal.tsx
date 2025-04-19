@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -60,8 +59,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   };
 
   const handleApprove = () => {
-    setStatus('Approved');
-    
     // Different behavior based on user role
     let updatedStatus: InvoiceStatus = 'Approved';
     let updateInfo = {};
@@ -86,8 +83,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   };
 
   const handleReject = () => {
-    setStatus('Rejected');
-    
     // Different behavior based on user role
     let updatedStatus: InvoiceStatus = 'Rejected';
     
@@ -125,7 +120,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
     );
   };
 
-  // Show different options based on user role
   const renderStatusOptions = () => {
     if (user?.role === 'CEO') {
       return (
@@ -155,7 +149,6 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
     }
   };
 
-  // Display actions based on user role
   const shouldShowActions = () => {
     if (user?.role === 'CEO') {
       return true; // CEO can see all actions

@@ -28,6 +28,20 @@ const Dashboard = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusTiles, setStatusTiles] = useState<StatusTile[]>([]);
+  const [refreshCounter, setRefreshCounter] = useState(0);
+
+  // Force refresh of tiles when status changes
+  useEffect(() => {
+    const handleStatusChange = () => {
+      setRefreshCounter(prev => prev + 1);
+    };
+    
+    window.addEventListener('invoice-status-change', handleStatusChange);
+    
+    return () => {
+      window.removeEventListener('invoice-status-change', handleStatusChange);
+    };
+  }, []);
 
   // Apply filters and role-based access
   useEffect(() => {
@@ -88,7 +102,7 @@ const Dashboard = () => {
     }
 
     setFilteredInvoices(result);
-  }, [activeTab, filters, user, mockInvoices]);
+  }, [activeTab, filters, user, mockInvoices, refreshCounter]);
 
   // Calculate and update status counts
   useEffect(() => {
@@ -169,7 +183,7 @@ const Dashboard = () => {
         icon: 'x-circle',
       },
     ]);
-  }, [mockInvoices, filters, user]);
+  }, [mockInvoices, filters, user, refreshCounter]);
 
   const handleFilterChange = (type: keyof FilterState, value: string) => {
     setFilters(prev => ({ ...prev, [type]: value }));
@@ -197,6 +211,9 @@ const Dashboard = () => {
         invoice.id === updatedInvoice.id ? updatedInvoice : invoice
       )
     );
+    
+    // Trigger a refresh of the status tiles
+    setRefreshCounter(prev => prev + 1);
     
     // Show a toast notification
     toast({

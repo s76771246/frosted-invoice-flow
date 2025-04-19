@@ -3,7 +3,7 @@ import React from 'react';
 import { 
   Clock, 
   CheckCircle, 
-  XCircle, 
+  X, 
   Inbox
 } from 'lucide-react';
 import { StatusTile } from '@/types';
@@ -28,7 +28,7 @@ const StatusTiles: React.FC<StatusTilesProps> = ({ tiles, onClick }) => {
       case 'clock':
         return <Clock className="h-7 w-7 text-amber-500" />;
       case 'x-circle':
-        return <XCircle className="h-7 w-7 text-red-500" />;
+        return <X className="h-7 w-7 text-red-500" />;
       default:
         return <Inbox className="h-7 w-7 text-gray-500" />;
     }
