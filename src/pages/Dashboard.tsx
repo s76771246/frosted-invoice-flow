@@ -215,6 +215,12 @@ const Dashboard = () => {
     // Trigger a refresh of the status tiles
     setRefreshCounter(prev => prev + 1);
     
+    // Dispatch a status change event to notify other components
+    const statusChangeEvent = new CustomEvent('invoice-status-change', {
+      detail: { invoice: updatedInvoice }
+    });
+    window.dispatchEvent(statusChangeEvent);
+    
     // Show a toast notification
     toast({
       title: "Invoice Updated",
