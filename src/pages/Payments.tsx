@@ -17,7 +17,7 @@ const Payments = () => {
   const [paidInvoices, setPaidInvoices] = useState<Invoice[]>([]);
 
   useEffect(() => {
-    // Filter invoices that are approved by both Clerk and Manager
+    // Filter invoices that are approved by both Clerk and Manager (Final Approved)
     const approved = mockInvoices.filter(inv => 
       inv.validationStatus === 'Final Approved' && !inv.isPaid
     );
@@ -55,7 +55,7 @@ const Payments = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-purple-100">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
@@ -66,25 +66,35 @@ const Payments = () => {
             <h2 className="text-xl font-semibold mb-4 text-black">Invoices Ready for Payment</h2>
             
             {payableInvoices.length === 0 ? (
-              <div className="true-glass p-6 text-center text-black">
+              <div className="bg-gradient-to-br from-sky-200/30 to-purple-200/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6 text-center text-black">
                 <p>No invoices ready for payment</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {payableInvoices.map(invoice => (
-                  <div key={invoice.id} className="true-glass p-4 flex justify-between items-center">
+                  <div key={invoice.id} className="bg-gradient-to-br from-blue-100/30 to-purple-100/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-4 flex justify-between items-center">
                     <div>
                       <h3 className="font-semibold text-lg text-black">{invoice.invoiceNo} - {invoice.title}</h3>
                       <p className="text-black/80">Supplier: {invoice.supplierName}</p>
                       <p className="text-black/80">Amount: {formatCurrency(invoice.invoiceValue)}</p>
-                      <p className="text-black/70 text-sm">Approved on: {invoice.updatedAt}</p>
+                      <p className="text-black/70 text-sm">Approved on: {formatDate(invoice.updatedAt)}</p>
                     </div>
-                    <Button 
-                      onClick={() => handlePayInvoice(invoice)}
-                      className="bg-purple-600 hover:bg-purple-700 true-glass"
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" /> Process Payment
-                    </Button>
+                    {user?.role === 'Manager' && (
+                      <Button 
+                        onClick={() => handlePayInvoice(invoice)}
+                        className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                      >
+                        <CreditCard className="mr-2 h-4 w-4" /> Process Payment
+                      </Button>
+                    )}
+                    {user?.role === 'CEO' && (
+                      <Button 
+                        disabled
+                        className="bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed"
+                      >
+                        <CreditCard className="mr-2 h-4 w-4" /> Awaiting Payment
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -95,11 +105,11 @@ const Payments = () => {
             <h2 className="text-xl font-semibold mb-4 text-black">Payment History</h2>
             
             {paidInvoices.length === 0 ? (
-              <div className="true-glass p-6 text-center text-black">
+              <div className="bg-gradient-to-br from-sky-200/30 to-purple-200/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6 text-center text-black">
                 <p>No payment history available</p>
               </div>
             ) : (
-              <div className="true-glass overflow-hidden">
+              <div className="bg-gradient-to-br from-blue-100/30 to-purple-100/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-white/10">
                   <thead>
                     <tr className="bg-white/10">

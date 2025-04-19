@@ -62,10 +62,23 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   const handleApprove = () => {
     setStatus('Approved');
     
+    // Different behavior based on user role
+    let updatedStatus: InvoiceStatus = 'Approved';
+    let updateInfo = {};
+    
+    if (user?.role === 'Clerk') {
+      updatedStatus = 'Approved';
+      updateInfo = { clerkApproved: true };
+    } else if (user?.role === 'Manager') {
+      updatedStatus = 'Final Approved';
+      updateInfo = { managerApproved: true };
+    }
+    
     const updatedInvoice: Invoice = {
       ...invoice,
-      validationStatus: 'Approved',
-      validationRemark: remarks || 'Approved by ' + user?.role,
+      validationStatus: updatedStatus,
+      validationRemark: remarks || `Approved by ${user?.role}`,
+      ...updateInfo
     };
     
     onSave(updatedInvoice);
@@ -75,10 +88,17 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   const handleReject = () => {
     setStatus('Rejected');
     
+    // Different behavior based on user role
+    let updatedStatus: InvoiceStatus = 'Rejected';
+    
+    if (user?.role === 'Manager') {
+      updatedStatus = 'Manager Rejected';
+    }
+    
     const updatedInvoice: Invoice = {
       ...invoice,
-      validationStatus: 'Rejected',
-      validationRemark: remarks || 'Rejected by ' + user?.role,
+      validationStatus: updatedStatus,
+      validationRemark: remarks || `Rejected by ${user?.role}`,
     };
     
     onSave(updatedInvoice);
@@ -88,9 +108,12 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   const renderStatus = (status: string) => {
     const statusClasses = {
       'Approved': 'bg-green-100 text-green-800 border-green-200',
+      'Final Approved': 'bg-blue-100 text-blue-800 border-blue-200',
       'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
       'Rejected': 'bg-red-100 text-red-800 border-red-200',
+      'Manager Rejected': 'bg-red-200 text-red-900 border-red-300',
       'Received': 'bg-purple-100 text-purple-800 border-purple-200',
+      'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-200',
     };
     
     const className = statusClasses[status as keyof typeof statusClasses] || 'bg-gray-100 text-gray-800 border-gray-200';
@@ -100,6 +123,47 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
         {status}
       </Badge>
     );
+  };
+
+  // Show different options based on user role
+  const renderStatusOptions = () => {
+    if (user?.role === 'CEO') {
+      return (
+        <>
+          <SelectItem value="Pending">Pending</SelectItem>
+          <SelectItem value="Approved">Approved</SelectItem>
+          <SelectItem value="Final Approved">Final Approved</SelectItem>
+          <SelectItem value="Rejected">Rejected</SelectItem>
+        </>
+      );
+    } else if (user?.role === 'Manager') {
+      return (
+        <>
+          <SelectItem value="Approved">Approved</SelectItem>
+          <SelectItem value="Final Approved">Final Approved</SelectItem>
+          <SelectItem value="Manager Rejected">Rejected</SelectItem>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <SelectItem value="Pending">Pending</SelectItem>
+          <SelectItem value="Approved">Approved</SelectItem>
+          <SelectItem value="Rejected">Rejected</SelectItem>
+        </>
+      );
+    }
+  };
+
+  // Display actions based on user role
+  const shouldShowActions = () => {
+    if (user?.role === 'CEO') {
+      return true; // CEO can see all actions
+    } else if (user?.role === 'Manager') {
+      return invoice.validationStatus === 'Approved' && invoice.clerkApproved;
+    } else {
+      return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
+    }
   };
 
   return (
@@ -193,9 +257,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="Approved">Approved</SelectItem>
-                <SelectItem value="Rejected">Rejected</SelectItem>
+                {renderStatusOptions()}
               </SelectContent>
             </Select>
           </div>
@@ -230,23 +292,25 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
             </Button>
           </div>
           
-          <div className="flex gap-2">
-            <Button 
-              onClick={handleReject}
-              className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1"
-            >
-              <XCircle className="h-4 w-4" />
-              Reject
-            </Button>
-            
-            <Button 
-              onClick={handleApprove}
-              className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1"
-            >
-              <CheckCircle className="h-4 w-4" />
-              Approve
-            </Button>
-          </div>
+          {shouldShowActions() && (
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleReject}
+                className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1"
+              >
+                <XCircle className="h-4 w-4" />
+                Reject
+              </Button>
+              
+              <Button 
+                onClick={handleApprove}
+                className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Approve
+              </Button>
+            </div>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -24,20 +24,41 @@ const Dashboard = () => {
     year: 'all',
     vendor: 'all',
   });
-  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>(mockInvoices);
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusTiles, setStatusTiles] = useState<StatusTile[]>([]);
 
+  // Apply filters and role-based access
   useEffect(() => {
-    let result = mockInvoices;
+    let result = [...mockInvoices];
 
-    if (activeTab !== 'all') {
-      result = result.filter(invoice => 
-        invoice.validationStatus.toLowerCase() === activeTab.toLowerCase()
-      );
+    // Filter based on user role
+    if (user?.role === 'Manager') {
+      // Managers only see clerk-approved invoices
+      result = result.filter(inv => inv.clerkApproved === true);
     }
 
+    // Apply tab filter
+    if (activeTab !== 'all') {
+      if (activeTab === 'approved') {
+        result = result.filter(invoice => 
+          invoice.validationStatus === 'Approved' || 
+          invoice.validationStatus === 'Final Approved'
+        );
+      } else if (activeTab === 'rejected') {
+        result = result.filter(invoice => 
+          invoice.validationStatus === 'Rejected' || 
+          invoice.validationStatus === 'Manager Rejected'
+        );
+      } else {
+        result = result.filter(invoice => 
+          invoice.validationStatus.toLowerCase() === activeTab.toLowerCase()
+        );
+      }
+    }
+
+    // Apply other filters
     if (filters.month !== 'all') {
       result = result.filter(invoice => {
         const invoiceMonth = invoice.invoiceDate.split('/')[0];
@@ -67,41 +88,88 @@ const Dashboard = () => {
     }
 
     setFilteredInvoices(result);
-  }, [activeTab, filters]);
+  }, [activeTab, filters, user, mockInvoices]);
 
+  // Calculate and update status counts
   useEffect(() => {
-    const receivedCount = filteredInvoices.length;
-    const approvedCount = filteredInvoices.filter(inv => inv.validationStatus === 'Approved').length;
-    const pendingCount = filteredInvoices.filter(inv => inv.validationStatus === 'Pending').length;
-    const rejectedCount = filteredInvoices.filter(inv => inv.validationStatus === 'Rejected').length;
+    // Get all invoices (not just filtered ones) for accurate counts
+    let countableInvoices = [...mockInvoices];
+    
+    // Apply role-based filtering for countable invoices
+    if (user?.role === 'Manager') {
+      countableInvoices = countableInvoices.filter(inv => inv.clerkApproved === true);
+    }
+    
+    // Apply other filters except status filter (to show correct counts for all statuses)
+    if (filters.month !== 'all') {
+      countableInvoices = countableInvoices.filter(invoice => {
+        const invoiceMonth = invoice.invoiceDate.split('/')[0];
+        return invoiceMonth === filters.month;
+      });
+    }
+
+    if (filters.quarter !== 'all') {
+      countableInvoices = countableInvoices.filter(invoice => {
+        const month = parseInt(invoice.invoiceDate.split('/')[0]);
+        const quarter = Math.ceil(month / 3);
+        return `Q${quarter}` === filters.quarter;
+      });
+    }
+
+    if (filters.year !== 'all') {
+      countableInvoices = countableInvoices.filter(invoice => {
+        const invoiceYear = invoice.invoiceDate.split('/')[2];
+        return invoiceYear === filters.year;
+      });
+    }
+
+    if (filters.vendor !== 'all') {
+      countableInvoices = countableInvoices.filter(invoice => 
+        invoice.supplierName === filters.vendor
+      );
+    }
+    
+    // Count by status
+    const total = countableInvoices.length;
+    const approved = countableInvoices.filter(inv => 
+      inv.validationStatus === 'Approved' || 
+      inv.validationStatus === 'Final Approved'
+    ).length;
+    const pending = countableInvoices.filter(inv => 
+      inv.validationStatus === 'Pending'
+    ).length;
+    const rejected = countableInvoices.filter(inv => 
+      inv.validationStatus === 'Rejected' || 
+      inv.validationStatus === 'Manager Rejected'
+    ).length;
     
     setStatusTiles([
       {
         status: 'Received',
-        count: receivedCount,
+        count: total,
         color: 'purple',
         icon: 'inbox',
       },
       {
         status: 'Approved',
-        count: approvedCount,
+        count: approved,
         color: 'green',
         icon: 'check-circle',
       },
       {
         status: 'Pending',
-        count: pendingCount,
+        count: pending,
         color: 'amber',
         icon: 'clock',
       },
       {
         status: 'Rejected',
-        count: rejectedCount,
+        count: rejected,
         color: 'red',
         icon: 'x-circle',
       },
     ]);
-  }, [filteredInvoices]);
+  }, [mockInvoices, filters, user]);
 
   const handleFilterChange = (type: keyof FilterState, value: string) => {
     setFilters(prev => ({ ...prev, [type]: value }));
@@ -117,20 +185,23 @@ const Dashboard = () => {
   };
 
   const handleSaveInvoice = (updatedInvoice: Invoice) => {
+    // Find and update the invoice in the mockInvoices array
     const index = mockInvoices.findIndex(inv => inv.id === updatedInvoice.id);
     if (index !== -1) {
       mockInvoices[index] = updatedInvoice;
     }
     
+    // Update the filtered invoices list
     setFilteredInvoices(prevInvoices => 
       prevInvoices.map(invoice => 
         invoice.id === updatedInvoice.id ? updatedInvoice : invoice
       )
     );
     
+    // Show a toast notification
     toast({
       title: "Invoice Updated",
-      description: `Invoice ${updatedInvoice.invoiceNo} has been updated successfully.`,
+      description: `Invoice ${updatedInvoice.invoiceNo} has been ${updatedInvoice.validationStatus}.`,
     });
   };
 
@@ -163,7 +234,7 @@ const Dashboard = () => {
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
       
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
-        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
+        <div className="bg-gradient-to-br from-sky-300/30 to-purple-300/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Invoice Status Overview</h2>
           <div className="h-80 w-full">
             <BarChart
@@ -187,7 +258,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
+        <div className="bg-gradient-to-br from-blue-200/30 to-green-200/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Monthly Trends</h2>
           <div className="h-80 w-full">
             <LineChart
@@ -210,7 +281,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
+        <div className="bg-gradient-to-br from-purple-200/30 to-pink-200/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Vendor Distribution</h2>
           <div className="h-80 w-full flex justify-center">
             <PieChart width={400} height={300}>
@@ -240,6 +311,50 @@ const Dashboard = () => {
     </div>
   );
 
+  const renderManagerDashboard = () => (
+    <>
+      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
+      
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">Manager Approval Queue</h1>
+      </div>
+      
+      <div className="bg-gradient-to-br from-sky-200/30 to-indigo-200/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6 mb-6">
+        <FilterBar
+          monthOptions={monthOptions}
+          quarterOptions={quarterOptions}
+          yearOptions={yearOptions}
+          vendorOptions={vendorOptions}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="bg-white/30 backdrop-blur-md border border-white/40 p-1 rounded-lg">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
+          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Awaiting Approval</TabsTrigger>
+          <TabsTrigger value="final approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
+          <TabsTrigger value="manager rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      <div className="bg-gradient-to-br from-blue-100/30 to-purple-100/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
+        <InvoiceTable 
+          invoices={filteredInvoices}
+          onInvoiceClick={handleInvoiceClick}
+        />
+      </div>
+      
+      <InvoiceModal
+        invoice={selectedInvoice}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveInvoice}
+      />
+    </>
+  );
+
   const renderClerkDashboard = () => (
     <>
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
@@ -249,7 +364,7 @@ const Dashboard = () => {
         <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300">Create New Invoice</Button>
       </div>
       
-      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6 mb-6">
+      <div className="bg-gradient-to-br from-sky-200/30 to-purple-200/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-6 mb-6">
         <FilterBar
           monthOptions={monthOptions}
           quarterOptions={quarterOptions}
@@ -269,7 +384,7 @@ const Dashboard = () => {
         </TabsList>
       </Tabs>
       
-      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
+      <div className="bg-gradient-to-br from-blue-100/30 to-purple-100/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
         <InvoiceTable 
           invoices={filteredInvoices}
           onInvoiceClick={handleInvoiceClick}
@@ -286,12 +401,16 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
         <main className="mt-8">
-          {user?.role === 'CEO' ? renderCEODashboard() : renderClerkDashboard()}
+          {user?.role === 'CEO' 
+            ? renderCEODashboard() 
+            : user?.role === 'Manager'
+              ? renderManagerDashboard()
+              : renderClerkDashboard()}
         </main>
       </div>
     </div>
