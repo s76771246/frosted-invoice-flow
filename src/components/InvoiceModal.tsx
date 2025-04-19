@@ -24,8 +24,8 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { useAuth } from '@/contexts/AuthContext';
-import { Check, X, FileText, Clipboard, CheckCircle2, XCircle2 } from 'lucide-react';
-import { Invoice } from '@/types';
+import { Check, X, FileText, Clipboard, CheckCircle, XCircle } from 'lucide-react';
+import { Invoice, InvoiceStatus } from '@/types';
 
 interface InvoiceModalProps {
   invoice: Invoice | null;
@@ -37,7 +37,7 @@ interface InvoiceModalProps {
 const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onSave }) => {
   const { user } = useAuth();
   const [remarks, setRemarks] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState<InvoiceStatus>('Pending');
 
   React.useEffect(() => {
     if (invoice) {
@@ -49,7 +49,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   if (!invoice) return null;
 
   const handleSave = () => {
-    const updatedInvoice = {
+    const updatedInvoice: Invoice = {
       ...invoice,
       validationStatus: status,
       validationRemark: remarks,
@@ -62,7 +62,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   const handleApprove = () => {
     setStatus('Approved');
     
-    const updatedInvoice = {
+    const updatedInvoice: Invoice = {
       ...invoice,
       validationStatus: 'Approved',
       validationRemark: remarks || 'Approved by ' + user?.role,
@@ -75,7 +75,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
   const handleReject = () => {
     setStatus('Rejected');
     
-    const updatedInvoice = {
+    const updatedInvoice: Invoice = {
       ...invoice,
       validationStatus: 'Rejected',
       validationRemark: remarks || 'Rejected by ' + user?.role,
@@ -187,7 +187,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
             </Label>
             <Select 
               value={status} 
-              onValueChange={setStatus}
+              onValueChange={(value: InvoiceStatus) => setStatus(value)}
             >
               <SelectTrigger id="status" className="w-full bg-white/70 border-purple-100/80 mt-1">
                 <SelectValue placeholder="Select status" />
@@ -235,7 +235,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
               onClick={handleReject}
               className="bg-red-500 hover:bg-red-600 text-white flex items-center gap-1"
             >
-              <XCircle2 className="h-4 w-4" />
+              <XCircle className="h-4 w-4" />
               Reject
             </Button>
             
@@ -243,7 +243,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ invoice, open, onClose, onS
               onClick={handleApprove}
               className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-1"
             >
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle className="h-4 w-4" />
               Approve
             </Button>
           </div>

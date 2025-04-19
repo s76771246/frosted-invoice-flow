@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -141,7 +142,7 @@ const Dashboard = () => {
   const monthlyData = [
     { month: 'Jan', invoices: 30, amount: 45000 },
     { month: 'Feb', invoices: 25, amount: 38000 },
-    { month: 'Mar', invoices: 35, invoices: 52000 },
+    { month: 'Mar', invoices: 35, amount: 52000 },
     { month: 'Apr', invoices: 40, amount: 60000 },
     { month: 'May', invoices: 28, amount: 42000 },
     { month: 'Jun', invoices: 32, amount: 48000 }
