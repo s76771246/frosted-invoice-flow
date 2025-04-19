@@ -12,18 +12,20 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import InvoiceView from "./pages/InvoiceView";
 import NotFound from "./pages/NotFound";
+import Payments from "./pages/Payments";
+import ChatBot from "./components/ChatBot";
 
 const queryClient = new QueryClient();
 
-// Protected route component
-const ProtectedRoute = ({ children, requiredRole }) => {
-  const { isAuthenticated, hasPermission } = useAuth();
+// Protected route component with role checking
+const ProtectedRoute = ({ children, requiredRoles = [] }) => {
+  const { isAuthenticated, user } = useAuth();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   
-  if (requiredRole && !hasPermission(requiredRole)) {
+  if (requiredRoles.length > 0 && user && !requiredRoles.includes(user.role)) {
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -31,29 +33,42 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 };
 
 const AppRoutes = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<Login />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/invoice/:id" 
-        element={
-          <ProtectedRoute>
-            <InvoiceView />
-          </ProtectedRoute>
-        } 
-      />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/invoice/:id" 
+          element={
+            <ProtectedRoute>
+              <InvoiceView />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/payments" 
+          element={
+            <ProtectedRoute requiredRoles={['CEO', 'Manager']}>
+              <Payments />
+            </ProtectedRoute>
+          } 
+        />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {isAuthenticated && <ChatBot />}
+    </>
   );
 };
 
@@ -63,7 +78,7 @@ const App = () => (
       <ThemeProvider>
         <AuthProvider>
           <TooltipProvider>
-            <div className="min-h-screen bg-[#262626] bg-pattern-dots">
+            <div className="min-h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-purple-100 text-black">
               <Toaster />
               <Sonner />
               <AppRoutes />

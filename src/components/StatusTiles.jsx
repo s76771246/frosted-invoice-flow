@@ -33,7 +33,7 @@ const StatusTiles = ({ tiles, onClick }) => {
       {filteredTiles.map((tile) => (
         <div
           key={tile.status}
-          className="true-glass p-6 float cursor-pointer transition-all duration-300 hover:bg-white/40 hover:shadow-lg"
+          className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg cursor-pointer transition-all duration-300 hover:bg-white/40 hover:shadow-xl"
           onClick={() => onClick && onClick(tile.status.toLowerCase())}
         >
           <div className="flex justify-between items-center mb-2">

@@ -1,356 +1,245 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Check, X, ArrowLeft } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { mockInvoices } from '@/data/mockData';
+import { formatCurrency, formatDate } from '@/utils/formatters';
+import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const InvoiceView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentTheme } = useTheme();
   const { user } = useAuth();
   const [invoice, setInvoice] = useState(null);
-  const [items, setItems] = useState([]);
-  
+  const [loading, setLoading] = useState(true);
+  const [remark, setRemark] = useState('');
+
   useEffect(() => {
-    const foundInvoice = mockInvoices.find(inv => inv.id === id);
-    if (foundInvoice) {
-      setInvoice(foundInvoice);
-      setItems(
-        foundInvoice.items || [
-          { description: 'Item 1', quantity: 1, rate: 100, amount: 100 },
-          { description: 'Item 2', quantity: 2, rate: 200, amount: 400 },
-        ]
-      );
+    // Simulate loading invoice data
+    const selectedInvoice = mockInvoices.find(inv => inv.id === id);
+    
+    if (selectedInvoice) {
+      setInvoice(selectedInvoice);
+      setRemark(selectedInvoice.validationRemark || '');
     }
+    
+    setLoading(false);
   }, [id]);
 
-  if (!invoice) {
-    return (
-      <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8">
-          <Header />
-          <div className="flex items-center space-x-4 mb-6">
-            <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold">Invoice Not Found</h1>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const handleInputChange = (field, value) => {
-    setInvoice(prev => {
-      if (!prev) return null;
-      return {
-        ...prev,
-        [field]: value,
-      };
-    });
-  };
-
-  const handleItemChange = (index, field, value) => {
-    const newItems = [...items];
-    
-    if (field === 'quantity' || field === 'rate') {
-      const numValue = typeof value === 'string' ? parseFloat(value) : value;
-      newItems[index][field] = numValue;
-      newItems[index].amount = newItems[index].quantity * newItems[index].rate;
-    } else {
-      newItems[index][field] = value;
-    }
-    
-    setItems(newItems);
+  const handleRemarkChange = (e) => {
+    setRemark(e.target.value);
   };
 
   const handleAction = (action) => {
-    if (!invoice) return;
+    if (!invoice || !user) return;
     
-    let updatedInvoice = { ...invoice, items };
+    let updatedStatus;
+    let updateInfo = {};
     
-    if (user?.role === 'Clerk') {
-      if (action === 'approve') {
-        updatedInvoice.validationStatus = 'Approved';
-        updatedInvoice.validationRemark = 'Invoice approved by Clerk: ' + user?.name;
-        updatedInvoice.clerkApproved = true;
-        updatedInvoice.managerApproved = false;
-      } else if (action === 'reject') {
-        updatedInvoice.validationStatus = 'Rejected';
-        updatedInvoice.validationRemark = 'Invoice rejected by Clerk: ' + user?.name;
-        updatedInvoice.clerkApproved = false;
-        updatedInvoice.managerApproved = false;
+    if (action === 'approve') {
+      if (user.role === 'Clerk') {
+        updatedStatus = 'Approved';
+        updateInfo = { clerkApproved: true };
+      } else if (user.role === 'Manager') {
+        updatedStatus = 'Final Approved';
+        updateInfo = { managerApproved: true };
+      } else {
+        updatedStatus = 'Approved';
       }
-    } else if (user?.role === 'Manager') {
-      if (action === 'approve') {
-        updatedInvoice.validationStatus = 'Final Approved';
-        updatedInvoice.validationRemark = 'Invoice approved by Manager: ' + user?.name;
-        updatedInvoice.managerApproved = true;
-      } else if (action === 'reject') {
-        updatedInvoice.validationStatus = 'Manager Rejected';
-        updatedInvoice.validationRemark = 'Invoice rejected by Manager: ' + user?.name;
-        updatedInvoice.managerApproved = false;
+    } else {
+      if (user.role === 'Manager') {
+        updatedStatus = 'Manager Rejected';
+      } else {
+        updatedStatus = 'Rejected';
       }
     }
     
-    const invoiceIndex = mockInvoices.findIndex(inv => inv.id === invoice.id);
-    if (invoiceIndex !== -1) {
-      mockInvoices[invoiceIndex] = updatedInvoice;
+    const updatedInvoice = {
+      ...invoice,
+      validationStatus: updatedStatus,
+      validationRemark: remark || `${action === 'approve' ? 'Approved' : 'Rejected'} by ${user.role}`,
+      ...updateInfo
+    };
+    
+    // Find and update the invoice in the mockInvoices array
+    const index = mockInvoices.findIndex(inv => inv.id === invoice.id);
+    if (index !== -1) {
+      mockInvoices[index] = updatedInvoice;
     }
     
+    // Show toast notification
     toast({
       title: `Invoice ${action === 'approve' ? 'Approved' : 'Rejected'}`,
-      description: `Invoice ${updatedInvoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'} successfully.`,
+      description: `Invoice ${invoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'}.`,
     });
     
     setInvoice(updatedInvoice);
+    
+    // This causes a window event to be dispatched that will force the tiles to update
+    const statusChangeEvent = new CustomEvent('invoice-status-change', {
+      detail: { invoice: updatedInvoice }
+    });
+    window.dispatchEvent(statusChangeEvent);
     
     setTimeout(() => {
       navigate('/dashboard');
     }, 1500);
   };
 
-  // Determine if approval/rejection buttons should be shown based on user role
-  const showApprovalButtons = () => {
-    if (user?.role === 'Clerk' && invoice.validationStatus === 'Pending') {
-      return true;
-    }
-    if (user?.role === 'Manager' && invoice.validationStatus === 'Approved' && !invoice.managerApproved) {
-      return true;
-    }
-    return false;
+  const renderStatus = (status) => {
+    const statusClasses = {
+      'Approved': 'bg-green-100 text-green-800 border-green-200',
+      'Final Approved': 'bg-blue-100 text-blue-800 border-blue-200',
+      'Pending': 'bg-amber-100 text-amber-800 border-amber-200',
+      'Rejected': 'bg-red-100 text-red-800 border-red-200',
+      'Manager Rejected': 'bg-red-200 text-red-900 border-red-300',
+      'Received': 'bg-purple-100 text-purple-800 border-purple-200',
+      'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    };
+    
+    const className = statusClasses[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+    
+    return (
+      <Badge variant="outline" className={`${className} px-3 py-1 text-xs rounded-full`}>
+        {status}
+      </Badge>
+    );
   };
 
+  const canActOnInvoice = () => {
+    if (!invoice || !user) return false;
+    
+    if (user.role === 'CEO') {
+      return true;
+    } else if (user.role === 'Manager') {
+      return invoice.validationStatus === 'Approved' && invoice.clerkApproved;
+    } else {
+      return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
+    }
+  };
+
+  if (loading) {
+    return <div>Loading invoice...</div>;
+  }
+
+  if (!invoice) {
+    return <div>Invoice not found.</div>;
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
-        <div className="flex items-center space-x-4 mb-6">
-          <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm" className="true-glass">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-          </Button>
-          <h1 className="text-3xl font-bold">Invoice Details: {invoice.invoiceNo}</h1>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="true-glass p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Invoice Document</h2>
-            <div className="flex items-center justify-center bg-white/20 backdrop-blur-sm rounded-lg h-96">
-              <div className="text-center p-8">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p className="mt-4 text-sm text-gray-500 font-mono">{invoice.invoiceDoc}</p>
-                <Button className="mt-4 true-glass" variant="outline">View PDF Document</Button>
-              </div>
-            </div>
+        <main className="mt-8">
+          <div className="mb-4">
+            <Link to="/dashboard" className="inline-flex items-center text-gray-600 hover:text-gray-800">
+              <ChevronLeft className="mr-2 h-5 w-5" />
+              Back to Dashboard
+            </Link>
           </div>
           
-          <div className="true-glass p-6 rounded-lg">
-            <h2 className="text-xl font-bold mb-4">Invoice Details</h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Invoice No</label>
-                  <Input 
-                    value={invoice.invoiceNo} 
-                    onChange={(e) => handleInputChange('invoiceNo', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
+          <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-8">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">{invoice.title}</h1>
+                <div className="flex items-center gap-2 text-gray-500">
+                  <FileText className="h-4 w-4" />
+                  <span className="text-sm font-medium">{invoice.invoiceNo}</span>
+                  <span className="text-sm">from</span>
+                  <span className="text-sm font-medium">{invoice.supplierName}</span>
+                </div>
+              </div>
+              
+              {renderStatus(invoice.validationStatus)}
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-700 mb-3">Invoice Information</h2>
+                
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Date:</span>
+                  <span className="text-sm font-medium">{formatDate(invoice.invoiceDate)}</span>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Invoice Date</label>
-                  <Input 
-                    value={invoice.invoiceDate} 
-                    onChange={(e) => handleInputChange('invoiceDate', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
+                <div className="flex items-center gap-2 mb-2">
+                  <Tag className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">PO Number:</span>
+                  <span className="text-sm font-medium">{invoice.poNo || 'N/A'}</span>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Title</label>
-                  <Input 
-                    value={invoice.title} 
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
+                <div className="flex items-center gap-2 mb-2">
+                  <CircleDollarSign className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Invoice Value:</span>
+                  <span className="text-sm font-medium">{formatCurrency(invoice.invoiceValue, invoice.invoiceCurrency)}</span>
+                </div>
+              </div>
+              
+              <div>
+                <h2 className="text-xl font-semibold text-gray-700 mb-3">Supplier Details</h2>
+                
+                <div className="flex items-center gap-2 mb-2">
+                  <Landmark className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Supplier Code:</span>
+                  <span className="text-sm font-medium">{invoice.supplierCode}</span>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">PO No</label>
-                  <Input 
-                    value={invoice.poNo} 
-                    onChange={(e) => handleInputChange('poNo', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
+                <div className="flex items-center gap-2 mb-2">
+                  <Building className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Supplier Name:</span>
+                  <span className="text-sm font-medium">{invoice.supplierName}</span>
                 </div>
                 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Supplier</label>
-                  <Input 
-                    value={invoice.supplierName} 
-                    onChange={(e) => handleInputChange('supplierName', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Supplier Code</label>
-                  <Input 
-                    value={invoice.supplierCode} 
-                    onChange={(e) => handleInputChange('supplierCode', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Currency</label>
-                  <Input 
-                    value="INR"
-                    readOnly
-                    className="bg-white/10 border border-white/30"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Total Value</label>
-                  <Input 
-                    value={invoice.invoiceValue.toString()} 
-                    onChange={(e) => handleInputChange('invoiceValue', parseFloat(e.target.value))}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <div className={`px-3 py-2 rounded-md border border-white/30 font-medium ${
-                    invoice.validationStatus === 'Approved' || invoice.validationStatus === 'Final Approved' ? 'bg-green-100/80 text-green-800' :
-                    invoice.validationStatus === 'Rejected' || invoice.validationStatus === 'Manager Rejected' ? 'bg-red-100/80 text-red-800' :
-                    'bg-amber-100/80 text-amber-800'
-                  }`}>
-                    {invoice.validationStatus}
-                  </div>
-                </div>
-                
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-sm font-medium">Remarks</label>
-                  <Textarea 
-                    value={invoice.validationRemark} 
-                    onChange={(e) => handleInputChange('validationRemark', e.target.value)}
-                    className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    rows={3}
-                  />
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Unique ID:</span>
+                  <span className="text-sm font-mono text-xs">{invoice.uniqueId}</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div className="true-glass p-6 rounded-lg mb-6">
-          <h2 className="text-xl font-bold mb-4">Line Items</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-white/10 text-left">
-                  <th className="p-2 border-b">Description</th>
-                  <th className="p-2 border-b text-right">Quantity</th>
-                  <th className="p-2 border-b text-right">Rate</th>
-                  <th className="p-2 border-b text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, index) => (
-                  <tr key={index} className="border-b border-white/10">
-                    <td className="p-2">
-                      <Input 
-                        value={item.description} 
-                        onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                        className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <Input 
-                        type="number"
-                        value={item.quantity} 
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <Input 
-                        type="number"
-                        value={item.rate} 
-                        onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                        className="bg-white/10 border border-white/30 focus:border-primary focus:ring-2 focus:ring-primary/30 text-right"
-                      />
-                    </td>
-                    <td className="p-2 text-right font-medium">
-                      {formatCurrency(item.amount)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-white/10 font-bold">
-                  <td colSpan={3} className="p-2 text-right">Total:</td>
-                  <td className="p-2 text-right">
-                    {formatCurrency(
-                      items.reduce((sum, item) => sum + item.amount, 0)
-                    )}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+            
+            <Separator className="my-4" />
+            
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700 mb-3">Validation Remark</h2>
+              <textarea
+                className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0"
+                placeholder="Add or edit a validation remark..."
+                value={remark}
+                onChange={handleRemarkChange}
+              />
+            </div>
           </div>
           
-          <Button 
-            className="mt-4 true-glass"
-            variant="outline"
-            onClick={() => setItems([...items, { description: '', quantity: 1, rate: 0, amount: 0 }])}
-          >
-            Add Item
-          </Button>
-        </div>
-        
-        <div className="flex justify-end space-x-4 mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/dashboard')}
-            className="true-glass"
-          >
-            Cancel
-          </Button>
-          
-          {showApprovalButtons() && (
-            <>
+          {/* Action Buttons */}
+          {canActOnInvoice() && (
+            <div className="flex justify-end gap-4 mt-8">
               <Button 
                 variant="destructive" 
                 onClick={() => handleAction('reject')}
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none"
               >
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
               
               <Button 
-                variant="default" 
                 onClick={() => handleAction('approve')}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none"
               >
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>
-            </>
+            </div>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );

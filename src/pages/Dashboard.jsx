@@ -1,6 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/Header';
 import StatusTiles from '@/components/StatusTiles';
 import FilterBar from '@/components/FilterBar';
@@ -14,7 +14,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, 
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { currentTheme } = useTheme();
   const [activeTab, setActiveTab] = useState('all');
   const [filters, setFilters] = useState({
     month: 'all',
@@ -26,119 +25,125 @@ const Dashboard = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusTiles, setStatusTiles] = useState([]);
+  const [refreshCounter, setRefreshCounter] = useState(0);
   
-  // Set default filter to current month
+  // Force refresh when invoice status changes
   useEffect(() => {
-    const currentDate = new Date();
-    const currentMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-    
-    setFilters(prev => ({
-      ...prev,
-      month: currentMonth
-    }));
-  }, []);
-
-  // Calculate status counts whenever invoices or filters change
-  useEffect(() => {
-    const calculateStatusCounts = () => {
-      // Apply all filters to get the current filtered set of invoices
-      let filtered = [...mockInvoices];
-      
-      // Filter based on user role
-      if (user?.role === 'Clerk') {
-        // Clerks see all invoices
-        filtered = filtered;
-      } else if (user?.role === 'Manager') {
-        // Managers only see clerk-approved invoices
-        filtered = filtered.filter(inv => inv.validationStatus === 'Approved' && inv.clerkApproved);
-      } else if (user?.role === 'CEO') {
-        // CEO sees all invoices
-        filtered = filtered;
-      }
-      
-      // Apply other filters
-      if (filters.month !== 'all') {
-        filtered = filtered.filter(invoice => {
-          const invoiceMonth = invoice.invoiceDate.split('/')[0];
-          return invoiceMonth === filters.month;
-        });
-      }
-      
-      const receivedCount = filtered.length;
-      const approvedCount = filtered.filter(inv => 
-        inv.validationStatus === 'Approved' || 
-        inv.validationStatus === 'Final Approved'
-      ).length;
-      const pendingCount = filtered.filter(inv => inv.validationStatus === 'Pending').length;
-      const rejectedCount = filtered.filter(inv => 
-        inv.validationStatus === 'Rejected' || 
-        inv.validationStatus === 'Manager Rejected'
-      ).length;
-      
-      setStatusTiles([
-        {
-          status: 'Received',
-          count: receivedCount,
-          color: 'purple',
-          icon: 'inbox',
-        },
-        {
-          status: 'Approved',
-          count: approvedCount,
-          color: 'green',
-          icon: 'check-circle',
-        },
-        {
-          status: 'Pending',
-          count: pendingCount,
-          color: 'amber',
-          icon: 'clock',
-        },
-        {
-          status: 'Rejected',
-          count: rejectedCount,
-          color: 'red',
-          icon: 'x-circle',
-        },
-      ]);
+    const handleStatusChange = () => {
+      setRefreshCounter(prev => prev + 1);
     };
     
-    calculateStatusCounts();
-  }, [mockInvoices, filters, user]);
+    window.addEventListener('invoice-status-change', handleStatusChange);
+    
+    return () => {
+      window.removeEventListener('invoice-status-change', handleStatusChange);
+    };
+  }, []);
 
+  // Apply filters and calculate status counts
   useEffect(() => {
-    let result = [...mockInvoices];
-
-    // Filter based on user role
-    if (user?.role === 'Clerk') {
-      // Clerks see all invoices
-      result = result;
-    } else if (user?.role === 'Manager') {
-      // Managers only see clerk-approved invoices
-      result = result.filter(inv => inv.validationStatus === 'Approved' && inv.clerkApproved);
+    // Get all invoices for counting
+    let allInvoices = [...mockInvoices];
+    
+    // Apply role-based filtering
+    if (user?.role === 'Manager') {
+      allInvoices = allInvoices.filter(inv => inv.clerkApproved === true);
     }
-
+    
+    // Apply other filters except status
+    if (filters.month !== 'all') {
+      allInvoices = allInvoices.filter(invoice => {
+        const invoiceMonth = invoice.invoiceDate.split('/')[0];
+        return invoiceMonth === filters.month;
+      });
+    }
+    
+    if (filters.quarter !== 'all') {
+      allInvoices = allInvoices.filter(invoice => {
+        const month = parseInt(invoice.invoiceDate.split('/')[0]);
+        const quarter = Math.ceil(month / 3);
+        return `Q${quarter}` === filters.quarter;
+      });
+    }
+    
+    if (filters.year !== 'all') {
+      allInvoices = allInvoices.filter(invoice => {
+        const invoiceYear = invoice.invoiceDate.split('/')[2];
+        return invoiceYear === filters.year;
+      });
+    }
+    
+    if (filters.vendor !== 'all') {
+      allInvoices = allInvoices.filter(invoice => 
+        invoice.supplierName === filters.vendor
+      );
+    }
+    
+    // Count by status
+    const total = allInvoices.length;
+    const approved = allInvoices.filter(inv => 
+      inv.validationStatus === 'Approved' || 
+      inv.validationStatus === 'Final Approved'
+    ).length;
+    const pending = allInvoices.filter(inv => 
+      inv.validationStatus === 'Pending'
+    ).length;
+    const rejected = allInvoices.filter(inv => 
+      inv.validationStatus === 'Rejected' || 
+      inv.validationStatus === 'Manager Rejected'
+    ).length;
+    
+    setStatusTiles([
+      {
+        status: 'Received',
+        count: total,
+        color: 'purple',
+        icon: 'inbox',
+      },
+      {
+        status: 'Approved',
+        count: approved,
+        color: 'green',
+        icon: 'check-circle',
+      },
+      {
+        status: 'Pending',
+        count: pending,
+        color: 'amber',
+        icon: 'clock',
+      },
+      {
+        status: 'Rejected',
+        count: rejected,
+        color: 'red',
+        icon: 'x-circle',
+      },
+    ]);
+    
+    // Filter invoices for the table view
+    let filteredResult = [...allInvoices];
+    
     // Apply tab filter
     if (activeTab !== 'all') {
       if (activeTab === 'approved') {
-        result = result.filter(invoice => 
+        filteredResult = filteredResult.filter(invoice => 
           invoice.validationStatus === 'Approved' || 
           invoice.validationStatus === 'Final Approved'
         );
       } else if (activeTab === 'rejected') {
-        result = result.filter(invoice => 
+        filteredResult = filteredResult.filter(invoice => 
           invoice.validationStatus === 'Rejected' || 
           invoice.validationStatus === 'Manager Rejected'
         );
       } else {
-        result = result.filter(invoice => 
+        filteredResult = filteredResult.filter(invoice => 
           invoice.validationStatus.toLowerCase() === activeTab.toLowerCase()
         );
       }
     }
-
-    setFilteredInvoices(result);
-  }, [activeTab, filters, user]);
+    
+    setFilteredInvoices(filteredResult);
+  }, [activeTab, filters, user, mockInvoices, refreshCounter]);
 
   const handleFilterChange = (type, value) => {
     setFilters(prev => ({ ...prev, [type]: value }));
@@ -154,7 +159,7 @@ const Dashboard = () => {
   };
 
   const handleSaveInvoice = (updatedInvoice) => {
-    // Find the invoice in the mockInvoices array and update it
+    // Find and update the invoice in the mockInvoices array
     const index = mockInvoices.findIndex(inv => inv.id === updatedInvoice.id);
     if (index !== -1) {
       mockInvoices[index] = updatedInvoice;
@@ -167,28 +172,20 @@ const Dashboard = () => {
       )
     );
     
+    // Force a recalculation of the status tiles
+    setRefreshCounter(prev => prev + 1);
+    
+    // Dispatch a status change event to notify other components
+    const statusChangeEvent = new CustomEvent('invoice-status-change', {
+      detail: { invoice: updatedInvoice }
+    });
+    window.dispatchEvent(statusChangeEvent);
+    
     toast({
       title: "Invoice Updated",
       description: `Invoice ${updatedInvoice.invoiceNo} has been updated successfully.`,
     });
-    
-    // Force a recalculation of the status tiles
-    const event = new Event('invoiceUpdated');
-    window.dispatchEvent(event);
   };
-
-  useEffect(() => {
-    const handleInvoiceUpdate = () => {
-      // This will trigger the useEffect that calculates status counts
-      setFilters(prev => ({ ...prev }));
-    };
-    
-    window.addEventListener('invoiceUpdated', handleInvoiceUpdate);
-    
-    return () => {
-      window.removeEventListener('invoiceUpdated', handleInvoiceUpdate);
-    };
-  }, []);
 
   const statusData = statusTiles.map(tile => ({
     name: tile.status,
@@ -219,8 +216,8 @@ const Dashboard = () => {
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
       
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
-        <div className="glass-panel p-6">
-          <h2 className="text-xl font-bold mb-4 text-black">Invoice Status Overview</h2>
+        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Invoice Status Overview</h2>
           <div className="h-80 w-full">
             <BarChart
               width={1000}
@@ -243,8 +240,8 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="glass-panel p-6">
-          <h2 className="text-xl font-bold mb-4 text-black">Monthly Trends</h2>
+        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Monthly Trends</h2>
           <div className="h-80 w-full">
             <LineChart
               width={500}
@@ -266,8 +263,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="glass-panel p-6">
-          <h2 className="text-xl font-bold mb-4 text-black">Vendor Distribution</h2>
+        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">Vendor Distribution</h2>
           <div className="h-80 w-full flex justify-center">
             <PieChart width={400} height={300}>
               <Pie
@@ -301,10 +298,10 @@ const Dashboard = () => {
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
       
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-black">Manager Approval Queue</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Manager Approval Queue</h1>
       </div>
       
-      <div className="glass-panel p-6 mb-6">
+      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg mb-6">
         <FilterBar
           monthOptions={monthOptions}
           quarterOptions={quarterOptions}
@@ -316,13 +313,15 @@ const Dashboard = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="glass-panel p-1">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/60 text-black">All Invoices</TabsTrigger>
-          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60 text-black">Awaiting Approval</TabsTrigger>
+        <TabsList className="bg-white/30 backdrop-blur-md border border-white/40 p-1 rounded-lg">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
+          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Awaiting Approval</TabsTrigger>
+          <TabsTrigger value="final approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
+          <TabsTrigger value="manager rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
         </TabsList>
       </Tabs>
       
-      <div className="glass-panel">
+      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
         <InvoiceTable 
           invoices={filteredInvoices}
           onInvoiceClick={handleInvoiceClick}
@@ -343,13 +342,13 @@ const Dashboard = () => {
       <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
       
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-black">Invoice Management</h1>
-        <Button className="bg-primary/90 hover:bg-primary backdrop-blur-sm transition-all duration-300 text-black">
+        <h1 className="text-3xl font-bold text-gray-800">Invoice Management</h1>
+        <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 border-none text-white">
           Create New Invoice
         </Button>
       </div>
       
-      <div className="glass-panel p-6 mb-6">
+      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg mb-6">
         <FilterBar
           monthOptions={monthOptions}
           quarterOptions={quarterOptions}
@@ -361,15 +360,15 @@ const Dashboard = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="glass-panel p-1">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/60 text-black">All Invoices</TabsTrigger>
-          <TabsTrigger value="pending" className="data-[state=active]:bg-white/60 text-black">Pending</TabsTrigger>
-          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60 text-black">Approved</TabsTrigger>
-          <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60 text-black">Rejected</TabsTrigger>
+        <TabsList className="bg-white/30 backdrop-blur-md border border-white/40 p-1 rounded-lg">
+          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
+          <TabsTrigger value="pending" className="data-[state=active]:bg-white/60">Pending</TabsTrigger>
+          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
+          <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
         </TabsList>
       </Tabs>
       
-      <div className="glass-panel">
+      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
         <InvoiceTable 
           invoices={filteredInvoices}
           onInvoiceClick={handleInvoiceClick}
@@ -386,7 +385,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
