@@ -83,7 +83,7 @@ export const mockInvoices = [
     title: 'IT Services',
     poNo: 'NA',
     validationStatus: 'Approved',
-    validationRemark: 'Approved by CEO',
+    validationRemark: 'Approved by Clerk',
     invoiceNo: '# DI95548-IN',
     invoiceDate: '02/27/2024',
     invoiceDoc: 'T144209990_invoice2_v2.pdf',
@@ -93,6 +93,7 @@ export const mockInvoices = [
     supplierName: 'IT RoundPoint',
     createdAt: '2024-02-25T09:15:00.000Z',
     updatedAt: '2024-02-27T11:45:00.000Z',
+    clerkApproved: true,
     items: [
       { description: 'Server Maintenance', quantity: 1, rate: 5000, amount: 5000 },
       { description: 'Software Licenses', quantity: 5, rate: 590, amount: 2950 }
@@ -123,8 +124,8 @@ export const mockInvoices = [
     uniqueId: 'bec53a6c-94a5-4ec8-89dd-51e3bc4dd5af',
     title: 'Hardware Supplies',
     poNo: 'NA',
-    validationStatus: 'Pending',
-    validationRemark: '',
+    validationStatus: 'Rejected',
+    validationRemark: 'Incorrect supplier information',
     invoiceNo: '435339',
     invoiceDate: '08/28/2023',
     invoiceDoc: 'T144203004_93975321_used.pdf',
@@ -205,7 +206,7 @@ export const mockInvoices = [
     title: 'Maintenance Contract',
     poNo: 'NA',
     validationStatus: 'Approved',
-    validationRemark: 'Approved by CEO',
+    validationRemark: 'Approved by Clerk',
     invoiceNo: 'INV-10623',
     invoiceDate: '04/07/2023',
     invoiceDoc: 'T144208136_INV-10623-CP-4AP-CONTROL-VALVES.pdf',
@@ -215,6 +216,7 @@ export const mockInvoices = [
     supplierName: 'ECOSAVE',
     createdAt: '2023-04-05T08:30:00.000Z',
     updatedAt: '2023-04-07T13:15:00.000Z',
+    clerkApproved: true,
     items: [
       { description: 'Monthly Maintenance', quantity: 1, rate: 875.42, amount: 875.42 }
     ]
@@ -224,8 +226,8 @@ export const mockInvoices = [
     uniqueId: 'c87da86c-1535-4d54-93e-8ad5c7e43293',
     title: 'Invoice',
     poNo: '373586',
-    validationStatus: 'Approved',
-    validationRemark: 'Approved by CEO',
+    validationStatus: 'Final Approved',
+    validationRemark: 'Approved by Manager',
     invoiceNo: 'INV-95625',
     invoiceDate: '03/21/2024',
     invoiceDoc: 'T144209004_Completed_Invoice_LOPEZ-PLATING-AND-SERVICE-SUPPLY-INV-95625-8-21-2023_used.pdf',
@@ -235,6 +237,8 @@ export const mockInvoices = [
     supplierName: 'Lopez Plating And Service Supply',
     createdAt: '2024-03-18T14:10:00.000Z',
     updatedAt: '2024-03-21T10:30:00.000Z',
+    clerkApproved: true,
+    managerApproved: true,
     items: [
       { description: 'Plating Services', quantity: 1, rate: 4500, amount: 4500 },
       { description: 'Materials', quantity: 1, rate: 1187.99, amount: 1187.99 }
@@ -266,8 +270,8 @@ export const mockInvoices = [
     uniqueId: '78965412-7894-4561-a230-45612378954',
     title: 'Software Licenses',
     poNo: 'PO7894561',
-    validationStatus: 'Pending',
-    validationRemark: '',
+    validationStatus: 'Approved',
+    validationRemark: 'Approved by Clerk',
     invoiceNo: 'MS-INV-456789',
     invoiceDate: '07/15/2024',
     invoiceDoc: 'T14425689_Microsoft_Licenses.pdf',
@@ -277,6 +281,7 @@ export const mockInvoices = [
     supplierName: 'Microsoft Corporation',
     createdAt: '2024-07-10T09:30:00.000Z',
     updatedAt: '2024-07-15T14:20:00.000Z',
+    clerkApproved: true,
     items: [
       { description: 'Office 365 Business', quantity: 25, rate: 500, amount: 12500 }
     ]
@@ -286,8 +291,8 @@ export const mockInvoices = [
     uniqueId: '32145698-7412-8523-9630-74125896301',
     title: 'Cloud Services',
     poNo: 'NA',
-    validationStatus: 'Approved',
-    validationRemark: 'Approved by CFO',
+    validationStatus: 'Paid',
+    validationRemark: 'Processed by Finance',
     invoiceNo: 'AWS-789654',
     invoiceDate: '06/30/2024',
     invoiceDoc: 'T14478965_AWS_Cloud_Services.pdf',
@@ -297,6 +302,10 @@ export const mockInvoices = [
     supplierName: 'Amazon Web Services',
     createdAt: '2024-06-25T11:15:00.000Z',
     updatedAt: '2024-06-30T16:45:00.000Z',
+    clerkApproved: true,
+    managerApproved: true,
+    paymentDate: '2024-07-05T10:30:00.000Z',
+    paymentReference: 'PAY-78965412',
     items: [
       { description: 'EC2 Instances', quantity: 1, rate: 5240.25, amount: 5240.25 },
       { description: 'S3 Storage', quantity: 1, rate: 1325.80, amount: 1325.80 },
@@ -308,8 +317,8 @@ export const mockInvoices = [
     uniqueId: '85214796-3698-7412-5210-96385214701',
     title: 'Catering Services',
     poNo: 'PO8521479',
-    validationStatus: 'Pending',
-    validationRemark: '',
+    validationStatus: 'Approved',
+    validationRemark: 'Approved by Clerk',
     invoiceNo: 'CT-INV-25689',
     invoiceDate: '07/20/2024',
     invoiceDoc: 'T14436589_Catering_Services.pdf',
@@ -319,6 +328,7 @@ export const mockInvoices = [
     supplierName: 'FoodCo Catering',
     createdAt: '2024-07-18T13:20:00.000Z',
     updatedAt: '2024-07-20T17:10:00.000Z',
+    clerkApproved: true,
     items: [
       { description: 'Corporate Event Catering', quantity: 1, rate: 8500, amount: 8500 },
       { description: 'Beverage Service', quantity: 1, rate: 1350, amount: 1350 }
@@ -329,8 +339,8 @@ export const mockInvoices = [
     uniqueId: '96325874-1230-4569-8741-85296374102',
     title: 'Office Furniture',
     poNo: 'PO9632587',
-    validationStatus: 'Pending',
-    validationRemark: '',
+    validationStatus: 'Final Approved',
+    validationRemark: 'Approved by Manager',
     invoiceNo: 'FUR-2589',
     invoiceDate: '07/05/2024',
     invoiceDoc: 'T14474125_Office_Furniture.pdf',
@@ -340,6 +350,8 @@ export const mockInvoices = [
     supplierName: 'FurniTech Solutions',
     createdAt: '2024-07-01T10:45:00.000Z',
     updatedAt: '2024-07-05T15:30:00.000Z',
+    clerkApproved: true,
+    managerApproved: true,
     items: [
       { description: 'Executive Desk', quantity: 2, rate: 4500, amount: 9000 },
       { description: 'Ergonomic Chair', quantity: 5, rate: 1850, amount: 9250 },
@@ -373,8 +385,8 @@ export const mockInvoices = [
     uniqueId: '78963214-5210-7896-3214-56987412301',
     title: 'Janitorial Services',
     poNo: 'NA',
-    validationStatus: 'Approved',
-    validationRemark: 'Regular vendor',
+    validationStatus: 'Paid',
+    validationRemark: 'Payment processed',
     invoiceNo: 'CLN-4569',
     invoiceDate: '07/25/2024',
     invoiceDoc: 'T14463254_Cleaning_Services.pdf',
@@ -384,6 +396,10 @@ export const mockInvoices = [
     supplierName: 'CleanPro Services',
     createdAt: '2024-07-20T08:30:00.000Z',
     updatedAt: '2024-07-25T13:10:00.000Z',
+    clerkApproved: true,
+    managerApproved: true,
+    paymentDate: '2024-07-28T14:25:00.000Z',
+    paymentReference: 'PAY-45612398',
     items: [
       { description: 'Monthly Office Cleaning', quantity: 1, rate: 4500, amount: 4500 }
     ]
@@ -393,8 +409,8 @@ export const mockInvoices = [
     uniqueId: '36985214-7012-3698-5214-70123698501',
     title: 'IT Hardware',
     poNo: 'PO3698521',
-    validationStatus: 'Pending',
-    validationRemark: '',
+    validationStatus: 'Final Approved',
+    validationRemark: 'Approved by Manager',
     invoiceNo: 'TECH-8521',
     invoiceDate: '07/18/2024',
     invoiceDoc: 'T14489652_IT_Hardware.pdf',
@@ -404,6 +420,8 @@ export const mockInvoices = [
     supplierName: 'Tech Supplies Ltd',
     createdAt: '2024-07-15T11:45:00.000Z',
     updatedAt: '2024-07-18T16:35:00.000Z',
+    clerkApproved: true,
+    managerApproved: true,
     items: [
       { description: 'Laptops', quantity: 5, rate: 12500, amount: 62500 },
       { description: 'Monitors', quantity: 8, rate: 2500, amount: 20000 },
@@ -415,8 +433,8 @@ export const mockInvoices = [
     uniqueId: '12305698-7412-1230-5698-74121230501',
     title: 'Legal Services',
     poNo: 'NA',
-    validationStatus: 'Approved',
-    validationRemark: 'Approved by Legal Dept',
+    validationStatus: 'Paid',
+    validationRemark: 'Payment processed',
     invoiceNo: 'LGL-6398',
     invoiceDate: '07/08/2024',
     invoiceDoc: 'T14452143_Legal_Services.pdf',
@@ -426,6 +444,10 @@ export const mockInvoices = [
     supplierName: 'Legal Consultants Inc',
     createdAt: '2024-07-05T14:20:00.000Z',
     updatedAt: '2024-07-08T17:10:00.000Z',
+    clerkApproved: true,
+    managerApproved: true,
+    paymentDate: '2024-07-15T11:30:00.000Z',
+    paymentReference: 'PAY-85214796',
     items: [
       { description: 'Contract Review', quantity: 5, rate: 1500, amount: 7500 },
       { description: 'Legal Consultation', quantity: 10, rate: 500, amount: 5000 }
@@ -436,8 +458,8 @@ export const mockInvoices = [
     uniqueId: '98745632-1058-9874-5632-10589874501',
     title: 'Training Workshop',
     poNo: 'PO9874563',
-    validationStatus: 'Pending',
-    validationRemark: '',
+    validationStatus: 'Approved',
+    validationRemark: 'Approved by Clerk',
     invoiceNo: 'TR-7821',
     invoiceDate: '07/22/2024',
     invoiceDoc: 'T14465874_Training_Workshop.pdf',
@@ -447,6 +469,7 @@ export const mockInvoices = [
     supplierName: 'Training Incorporated',
     createdAt: '2024-07-20T09:45:00.000Z',
     updatedAt: '2024-07-22T14:15:00.000Z',
+    clerkApproved: true,
     items: [
       { description: 'Leadership Workshop', quantity: 1, rate: 25000, amount: 25000 },
       { description: 'Training Materials', quantity: 20, rate: 500, amount: 10000 }

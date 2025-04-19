@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -233,7 +234,6 @@ const InvoiceView = () => {
               </Button>
               
               <Button 
-                variant="default" 
                 onClick={() => handleAction('approve')}
                 className="bg-green-500 hover:bg-green-600"
               >
