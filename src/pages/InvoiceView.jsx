@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,44 +9,44 @@ import { mockInvoices } from '@/data/mockData';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
 const InvoiceView = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remark, setRemark] = useState('');
-
   useEffect(() => {
     // Simulate loading invoice data
     const selectedInvoice = mockInvoices.find(inv => inv.id === id);
-    
     if (selectedInvoice) {
       setInvoice(selectedInvoice);
       setRemark(selectedInvoice.validationRemark || '');
     }
-    
     setLoading(false);
   }, [id]);
-
-  const handleRemarkChange = (e) => {
+  const handleRemarkChange = e => {
     setRemark(e.target.value);
   };
-
-  const handleAction = (action) => {
+  const handleAction = action => {
     if (!invoice || !user) return;
-    
     let updatedStatus;
     let updateInfo = {};
-    
     if (action === 'approve') {
       if (user.role === 'Clerk') {
         updatedStatus = 'Approved';
-        updateInfo = { clerkApproved: true };
+        updateInfo = {
+          clerkApproved: true
+        };
       } else if (user.role === 'Manager') {
         updatedStatus = 'Final Approved';
-        updateInfo = { managerApproved: true };
+        updateInfo = {
+          managerApproved: true
+        };
       } else {
         updatedStatus = 'Approved';
       }
@@ -58,40 +57,38 @@ const InvoiceView = () => {
         updatedStatus = 'Rejected';
       }
     }
-    
     const updatedInvoice = {
       ...invoice,
       validationStatus: updatedStatus,
       validationRemark: remark || `${action === 'approve' ? 'Approved' : 'Rejected'} by ${user.role}`,
       ...updateInfo
     };
-    
+
     // Find and update the invoice in the mockInvoices array
     const index = mockInvoices.findIndex(inv => inv.id === invoice.id);
     if (index !== -1) {
       mockInvoices[index] = updatedInvoice;
     }
-    
+
     // Show toast notification
     toast({
       title: `Invoice ${action === 'approve' ? 'Approved' : 'Rejected'}`,
-      description: `Invoice ${invoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'}.`,
+      description: `Invoice ${invoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'}.`
     });
-    
     setInvoice(updatedInvoice);
-    
+
     // This causes a window event to be dispatched that will force the tiles to update
     const statusChangeEvent = new CustomEvent('invoice-status-change', {
-      detail: { invoice: updatedInvoice }
+      detail: {
+        invoice: updatedInvoice
+      }
     });
     window.dispatchEvent(statusChangeEvent);
-    
     setTimeout(() => {
       navigate('/dashboard');
     }, 1500);
   };
-
-  const renderStatus = (status) => {
+  const renderStatus = status => {
     const statusClasses = {
       'Approved': 'bg-green-100 text-green-800 border-green-200',
       'Final Approved': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -99,21 +96,15 @@ const InvoiceView = () => {
       'Rejected': 'bg-red-100 text-red-800 border-red-200',
       'Manager Rejected': 'bg-red-200 text-red-900 border-red-300',
       'Received': 'bg-purple-100 text-purple-800 border-purple-200',
-      'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-200'
     };
-    
     const className = statusClasses[status] || 'bg-gray-100 text-gray-800 border-gray-200';
-    
-    return (
-      <Badge variant="outline" className={`${className} px-3 py-1 text-xs rounded-full`}>
+    return <Badge variant="outline" className={`${className} px-3 py-1 text-xs rounded-full`}>
         {status}
-      </Badge>
-    );
+      </Badge>;
   };
-
   const canActOnInvoice = () => {
     if (!invoice || !user) return false;
-    
     if (user.role === 'CEO') {
       return true;
     } else if (user.role === 'Manager') {
@@ -122,17 +113,13 @@ const InvoiceView = () => {
       return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
     }
   };
-
   if (loading) {
     return <div>Loading invoice...</div>;
   }
-
   if (!invoice) {
     return <div>Invoice not found.</div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
+  return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
@@ -211,38 +198,22 @@ const InvoiceView = () => {
             
             <div>
               <h2 className="text-xl font-semibold text-gray-700 mb-3">Validation Remark</h2>
-              <textarea
-                className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0"
-                placeholder="Add or edit a validation remark..."
-                value={remark}
-                onChange={handleRemarkChange}
-              />
+              <textarea className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" placeholder="Add or edit a validation remark..." value={remark} onChange={handleRemarkChange} />
             </div>
           </div>
           
           {/* Action Buttons */}
-          {canActOnInvoice() && (
-            <div className="flex justify-end gap-4 mt-8">
-              <Button 
-                variant="destructive" 
-                onClick={() => handleAction('reject')}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none"
-              >
+          {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8">
+              <Button variant="destructive" onClick={() => handleAction('reject')} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none text-red-500 bg-sky-400 hover:bg-sky-300">
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
               
-              <Button 
-                onClick={() => handleAction('approve')}
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none"
-              >
+              <Button onClick={() => handleAction('approve')} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none text-green-400 bg-sky-400 hover:bg-sky-300">
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>
-            </div>
-          )}
+            </div>}
         </main>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default InvoiceView;
