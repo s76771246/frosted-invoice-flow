@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +10,6 @@ import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-
 const InvoiceView = () => {
   const {
     id
@@ -23,7 +21,6 @@ const InvoiceView = () => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remark, setRemark] = useState('');
-  
   useEffect(() => {
     // Simulate loading invoice data
     const selectedInvoice = mockInvoices.find(inv => inv.id === id);
@@ -33,11 +30,9 @@ const InvoiceView = () => {
     }
     setLoading(false);
   }, [id]);
-  
   const handleRemarkChange = e => {
     setRemark(e.target.value);
   };
-  
   const handleAction = action => {
     if (!invoice || !user) return;
     let updatedStatus;
@@ -94,7 +89,6 @@ const InvoiceView = () => {
       navigate('/dashboard');
     }, 1500);
   };
-  
   const renderStatus = status => {
     const statusClasses = {
       'Approved': 'bg-green-100 text-green-800 border-green-200',
@@ -110,7 +104,6 @@ const InvoiceView = () => {
         {status}
       </Badge>;
   };
-  
   const canActOnInvoice = () => {
     if (!invoice || !user) return false;
     if (user.role === 'CEO') {
@@ -121,14 +114,12 @@ const InvoiceView = () => {
       return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
     }
   };
-  
   if (loading) {
     return <div>Loading invoice...</div>;
   }
   if (!invoice) {
     return <div>Invoice not found.</div>;
   }
-  
   return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
@@ -223,10 +214,7 @@ const InvoiceView = () => {
                 
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 mb-3">Validation Remark</h2>
-                  <textarea className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" 
-                    placeholder="Add or edit a validation remark..." 
-                    value={remark} 
-                    onChange={handleRemarkChange} />
+                  <textarea className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" placeholder="Add or edit a validation remark..." value={remark} onChange={handleRemarkChange} />
                 </div>
               </div>
             </div>
@@ -266,16 +254,11 @@ const InvoiceView = () => {
           
           {/* Action Buttons with improved styling */}
           {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8">
-              <Button 
-                variant="destructive" 
-                onClick={() => handleAction('reject')} 
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none text-white">
+              <Button variant="destructive" onClick={() => handleAction('reject')} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none text-red-500 bg-zinc-900 hover:bg-zinc-800 rounded-3xl">
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
               
-              <Button 
-                onClick={() => handleAction('approve')} 
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none text-white">
+              <Button onClick={() => handleAction('approve')} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none text-green-500">
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>
             </div>}
@@ -283,5 +266,4 @@ const InvoiceView = () => {
       </div>
     </div>;
 };
-
 export default InvoiceView;
