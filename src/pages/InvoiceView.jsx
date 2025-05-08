@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +10,8 @@ import { mockInvoices } from '@/data/mockData';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+
 const InvoiceView = () => {
   const {
     id
@@ -20,6 +23,7 @@ const InvoiceView = () => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remark, setRemark] = useState('');
+  
   useEffect(() => {
     // Simulate loading invoice data
     const selectedInvoice = mockInvoices.find(inv => inv.id === id);
@@ -29,9 +33,11 @@ const InvoiceView = () => {
     }
     setLoading(false);
   }, [id]);
+  
   const handleRemarkChange = e => {
     setRemark(e.target.value);
   };
+  
   const handleAction = action => {
     if (!invoice || !user) return;
     let updatedStatus;
@@ -88,6 +94,7 @@ const InvoiceView = () => {
       navigate('/dashboard');
     }, 1500);
   };
+  
   const renderStatus = status => {
     const statusClasses = {
       'Approved': 'bg-green-100 text-green-800 border-green-200',
@@ -103,6 +110,7 @@ const InvoiceView = () => {
         {status}
       </Badge>;
   };
+  
   const canActOnInvoice = () => {
     if (!invoice || !user) return false;
     if (user.role === 'CEO') {
@@ -113,12 +121,14 @@ const InvoiceView = () => {
       return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
     }
   };
+  
   if (loading) {
     return <div>Loading invoice...</div>;
   }
   if (!invoice) {
     return <div>Invoice not found.</div>;
   }
+  
   return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
@@ -131,84 +141,141 @@ const InvoiceView = () => {
             </Link>
           </div>
           
-          <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-xl shadow-lg p-8">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">{invoice.title}</h1>
-                <div className="flex items-center gap-2 text-gray-500">
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm font-medium">{invoice.invoiceNo}</span>
-                  <span className="text-sm">from</span>
-                  <span className="text-sm font-medium">{invoice.supplierName}</span>
+          <div className="bg-white/70 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
+            {/* New Layout: Left side has invoice image, right side has data */}
+            <div className="flex flex-col md:flex-row">
+              {/* Left side - Invoice Image/Preview */}
+              <div className="md:w-1/3 p-6 border-r border-purple-100/50">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">Invoice Preview</h2>
+                <div className="bg-gray-100/50 rounded-lg flex items-center justify-center h-80">
+                  <FileText className="h-20 w-20 text-gray-400" />
+                </div>
+                <div className="mt-4 text-center text-sm text-gray-500">
+                  Invoice {invoice.invoiceNo}
                 </div>
               </div>
               
-              {renderStatus(invoice.validationStatus)}
-            </div>
-            
-            <Separator className="my-4" />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-700 mb-3">Invoice Information</h2>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Date:</span>
-                  <span className="text-sm font-medium">{formatDate(invoice.invoiceDate)}</span>
+              {/* Right side - Invoice Data */}
+              <div className="md:w-2/3 p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">{invoice.title}</h1>
+                    <div className="flex items-center gap-2 text-gray-500">
+                      <FileText className="h-4 w-4" />
+                      <span className="text-sm font-medium">{invoice.invoiceNo}</span>
+                      <span className="text-sm">from</span>
+                      <span className="text-sm font-medium">{invoice.supplierName}</span>
+                    </div>
+                  </div>
+                  
+                  {renderStatus(invoice.validationStatus)}
                 </div>
                 
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">PO Number:</span>
-                  <span className="text-sm font-medium">{invoice.poNo || 'N/A'}</span>
+                <Separator className="my-4" />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-3">Invoice Information</h2>
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">Date:</span>
+                      <span className="text-sm font-medium">{formatDate(invoice.invoiceDate)}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tag className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">PO Number:</span>
+                      <span className="text-sm font-medium">{invoice.poNo || 'N/A'}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <CircleDollarSign className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">Invoice Value:</span>
+                      <span className="text-sm font-medium">{formatCurrency(invoice.invoiceValue, invoice.invoiceCurrency)}</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-3">Supplier Details</h2>
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <Landmark className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">Supplier Code:</span>
+                      <span className="text-sm font-medium">{invoice.supplierCode}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <Building className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">Supplier Name:</span>
+                      <span className="text-sm font-medium">{invoice.supplierName}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-2">
+                      <FileText className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">Unique ID:</span>
+                      <span className="text-sm font-mono text-xs">{invoice.uniqueId}</span>
+                    </div>
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-2 mb-2">
-                  <CircleDollarSign className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Invoice Value:</span>
-                  <span className="text-sm font-medium">{formatCurrency(invoice.invoiceValue, invoice.invoiceCurrency)}</span>
+                <Separator className="my-4" />
+                
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-700 mb-3">Validation Remark</h2>
+                  <textarea className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" 
+                    placeholder="Add or edit a validation remark..." 
+                    value={remark} 
+                    onChange={handleRemarkChange} />
                 </div>
               </div>
-              
-              <div>
-                <h2 className="text-xl font-semibold text-gray-700 mb-3">Supplier Details</h2>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Landmark className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Supplier Code:</span>
-                  <span className="text-sm font-medium">{invoice.supplierCode}</span>
-                </div>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Building className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Supplier Name:</span>
-                  <span className="text-sm font-medium">{invoice.supplierName}</span>
-                </div>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Unique ID:</span>
-                  <span className="text-sm font-mono text-xs">{invoice.uniqueId}</span>
-                </div>
-              </div>
             </div>
             
-            <Separator className="my-4" />
-            
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700 mb-3">Validation Remark</h2>
-              <textarea className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" placeholder="Add or edit a validation remark..." value={remark} onChange={handleRemarkChange} />
+            {/* Bottom Table Section */}
+            <div className="p-6 border-t border-purple-100/50">
+              <h2 className="text-xl font-semibold text-gray-700 mb-4">Line Items</h2>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item No.</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Unit Price</TableHead>
+                    <TableHead>Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>1</TableCell>
+                    <TableCell>Professional Services</TableCell>
+                    <TableCell>1</TableCell>
+                    <TableCell>{formatCurrency(invoice.invoiceValue * 0.8, invoice.invoiceCurrency)}</TableCell>
+                    <TableCell>{formatCurrency(invoice.invoiceValue * 0.8, invoice.invoiceCurrency)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>2</TableCell>
+                    <TableCell>Materials</TableCell>
+                    <TableCell>10</TableCell>
+                    <TableCell>{formatCurrency(invoice.invoiceValue * 0.02, invoice.invoiceCurrency)}</TableCell>
+                    <TableCell>{formatCurrency(invoice.invoiceValue * 0.2, invoice.invoiceCurrency)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
           </div>
           
-          {/* Action Buttons */}
+          {/* Action Buttons with improved styling */}
           {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8">
-              <Button variant="destructive" onClick={() => handleAction('reject')} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none text-red-500 bg-sky-400 hover:bg-sky-300">
+              <Button 
+                variant="destructive" 
+                onClick={() => handleAction('reject')} 
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none text-white">
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
               
-              <Button onClick={() => handleAction('approve')} className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none bg-sky-400 hover:bg-sky-300 text-green-500 rounded-2xl">
+              <Button 
+                onClick={() => handleAction('approve')} 
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-none text-white">
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>
             </div>}
@@ -216,4 +283,5 @@ const InvoiceView = () => {
       </div>
     </div>;
 };
+
 export default InvoiceView;
