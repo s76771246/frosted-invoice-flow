@@ -253,7 +253,7 @@ const InvoiceView = () => {
           </div>
           
           {/* Action Buttons with improved styling */}
-          {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8">
+          {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8 bg-zinc-200">
               <Button variant="destructive" onClick={() => handleAction('reject')} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 border-none text-red-500 bg-zinc-900 hover:bg-zinc-800 rounded-3xl">
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
