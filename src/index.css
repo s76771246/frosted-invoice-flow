@@ -19,6 +19,21 @@
     
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
+    
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 240 5.9% 10%;
+    
+    --radius: 0.75rem;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
   }
 
   .theme-gold {
@@ -52,7 +67,7 @@
   }
 
   body {
-    @apply text-foreground min-h-screen bg-[#f0f0f0] bg-opacity-85;
+    @apply bg-background text-foreground min-h-screen bg-[#f0f0f0] bg-opacity-85;
     font-feature-settings: "rlig" 1, "calt" 1;
     background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
     background-size: 30px 30px;
