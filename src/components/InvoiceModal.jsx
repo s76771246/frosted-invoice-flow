@@ -9,7 +9,6 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
@@ -274,7 +273,7 @@ const InvoiceModal = ({ invoice, open, onClose, onSave }) => {
             
             <Button 
               onClick={handleSave}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-none"
             >
               Save Changes
             </Button>
@@ -284,7 +283,7 @@ const InvoiceModal = ({ invoice, open, onClose, onSave }) => {
             <div className="flex gap-2">
               <Button 
                 onClick={handleReject}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white flex items-center gap-1"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white flex items-center gap-1 border-none"
               >
                 <XCircle className="h-4 w-4" />
                 Reject
@@ -292,7 +291,7 @@ const InvoiceModal = ({ invoice, open, onClose, onSave }) => {
               
               <Button 
                 onClick={handleApprove}
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white flex items-center gap-1"
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white flex items-center gap-1 border-none"
               >
                 <CheckCircle className="h-4 w-4" />
                 Approve

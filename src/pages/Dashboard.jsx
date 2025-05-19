@@ -1,36 +1,82 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import Header from '@/components/Header';
 import StatusTiles from '@/components/StatusTiles';
 import FilterBar from '@/components/FilterBar';
 import InvoiceTable from '@/components/InvoiceTable';
 import InvoiceModal from '@/components/InvoiceModal';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatDate } from '@/utils/formatters';
+import { fetchInvoices, updateInvoice, calculateStatusCounts } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
-import { mockInvoices, monthOptions, quarterOptions, yearOptions, vendorOptions } from '@/data/mockData';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('all');
-  const [filters, setFilters] = useState({
-    month: 'all',
-    quarter: 'all',
-    year: 'all',
-    vendor: 'all',
-  });
+  const { currentTheme } = useTheme();
+  const navigate = useNavigate();
+  
+  const [invoices, setInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [statusTiles, setStatusTiles] = useState([]);
-  const [refreshCounter, setRefreshCounter] = useState(0);
   
-  // Force refresh when invoice status changes
+  // Filter state
+  const [filters, setFilters] = useState({
+    status: 'all',
+    vendor: 'all',
+    month: 'all',
+    quarter: 'all',
+    year: 'all',
+    search: '',
+  });
+
+  // Load invoices on component mount
   useEffect(() => {
-    const handleStatusChange = () => {
-      setRefreshCounter(prev => prev + 1);
+    const loadInvoices = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchInvoices();
+        setInvoices(data);
+        setFilteredInvoices(data);
+        
+        // Calculate status counts
+        const tiles = calculateStatusCounts(data);
+        setStatusTiles(tiles);
+      } catch (error) {
+        console.error("Failed to load invoices:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load invoices. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadInvoices();
+    
+    // Listen for invoice status changes
+    const handleStatusChange = (event) => {
+      const { invoice } = event.detail;
+      setInvoices(prevInvoices => {
+        const updatedInvoices = prevInvoices.map(inv => 
+          inv.id === invoice.id ? invoice : inv
+        );
+        
+        // Update status tiles
+        const tiles = calculateStatusCounts(updatedInvoices);
+        setStatusTiles(tiles);
+        
+        // Apply filters to updated invoices
+        applyFilters(updatedInvoices, filters);
+        
+        return updatedInvoices;
+      });
     };
     
     window.addEventListener('invoice-status-change', handleStatusChange);
@@ -40,117 +86,70 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Apply filters and calculate status counts
+  // Apply filters when filters state changes
   useEffect(() => {
-    // Get all invoices for counting
-    let allInvoices = [...mockInvoices];
+    applyFilters(invoices, filters);
+  }, [filters, invoices]);
+
+  const applyFilters = (invoiceList, currentFilters) => {
+    let result = [...invoiceList];
     
-    // Apply role-based filtering
-    if (user?.role === 'Manager') {
-      allInvoices = allInvoices.filter(inv => inv.clerkApproved === true);
+    // Filter by status
+    if (currentFilters.status !== 'all') {
+      result = result.filter(inv => inv.validationStatus === currentFilters.status);
     }
     
-    // Apply other filters except status
-    if (filters.month !== 'all') {
-      allInvoices = allInvoices.filter(invoice => {
-        const invoiceMonth = invoice.invoiceDate.split('/')[0];
-        return invoiceMonth === filters.month;
-      });
+    // Filter by vendor
+    if (currentFilters.vendor !== 'all') {
+      result = result.filter(inv => inv.supplierName === currentFilters.vendor);
     }
     
-    if (filters.quarter !== 'all') {
-      allInvoices = allInvoices.filter(invoice => {
-        const month = parseInt(invoice.invoiceDate.split('/')[0]);
-        const quarter = Math.ceil(month / 3);
-        return `Q${quarter}` === filters.quarter;
-      });
-    }
-    
-    if (filters.year !== 'all') {
-      allInvoices = allInvoices.filter(invoice => {
-        const invoiceYear = invoice.invoiceDate.split('/')[2];
-        return invoiceYear === filters.year;
-      });
-    }
-    
-    if (filters.vendor !== 'all') {
-      allInvoices = allInvoices.filter(invoice => 
-        invoice.supplierName === filters.vendor
+    // Filter by search term
+    if (currentFilters.search) {
+      const searchLower = currentFilters.search.toLowerCase();
+      result = result.filter(inv => 
+        inv.invoiceNo.toLowerCase().includes(searchLower) ||
+        inv.title.toLowerCase().includes(searchLower) ||
+        inv.supplierName.toLowerCase().includes(searchLower)
       );
     }
     
-    // Count by status
-    const total = allInvoices.length;
-    const approved = allInvoices.filter(inv => 
-      inv.validationStatus === 'Approved' || 
-      inv.validationStatus === 'Final Approved'
-    ).length;
-    const pending = allInvoices.filter(inv => 
-      inv.validationStatus === 'Pending'
-    ).length;
-    const rejected = allInvoices.filter(inv => 
-      inv.validationStatus === 'Rejected' || 
-      inv.validationStatus === 'Manager Rejected'
-    ).length;
-    
-    setStatusTiles([
-      {
-        status: 'Received',
-        count: total,
-        color: 'purple',
-        icon: 'inbox',
-      },
-      {
-        status: 'Approved',
-        count: approved,
-        color: 'green',
-        icon: 'check-circle',
-      },
-      {
-        status: 'Pending',
-        count: pending,
-        color: 'amber',
-        icon: 'clock',
-      },
-      {
-        status: 'Rejected',
-        count: rejected,
-        color: 'red',
-        icon: 'x-circle',
-      },
-    ]);
-    
-    // Filter invoices for the table view
-    let filteredResult = [...allInvoices];
-    
-    // Apply tab filter
-    if (activeTab !== 'all') {
-      if (activeTab === 'approved') {
-        filteredResult = filteredResult.filter(invoice => 
-          invoice.validationStatus === 'Approved' || 
-          invoice.validationStatus === 'Final Approved'
-        );
-      } else if (activeTab === 'rejected') {
-        filteredResult = filteredResult.filter(invoice => 
-          invoice.validationStatus === 'Rejected' || 
-          invoice.validationStatus === 'Manager Rejected'
-        );
-      } else {
-        filteredResult = filteredResult.filter(invoice => 
-          invoice.validationStatus.toLowerCase() === activeTab.toLowerCase()
-        );
-      }
+    // Filter by month
+    if (currentFilters.month !== 'all') {
+      result = result.filter(inv => {
+        const invoiceMonth = formatDate(inv.invoiceDate).split('/')[0];
+        return invoiceMonth === currentFilters.month;
+      });
     }
     
-    setFilteredInvoices(filteredResult);
-  }, [activeTab, filters, user, mockInvoices, refreshCounter]);
-
-  const handleFilterChange = (type, value) => {
-    setFilters(prev => ({ ...prev, [type]: value }));
+    // Filter by year
+    if (currentFilters.year !== 'all') {
+      result = result.filter(inv => {
+        const invoiceYear = formatDate(inv.invoiceDate).split('/')[2];
+        return invoiceYear === currentFilters.year;
+      });
+    }
+    
+    // Filter by quarter
+    if (currentFilters.quarter !== 'all') {
+      result = result.filter(inv => {
+        const month = parseInt(formatDate(inv.invoiceDate).split('/')[0]);
+        const quarter = Math.ceil(month / 3);
+        return `Q${quarter}` === currentFilters.quarter;
+      });
+    }
+    
+    setFilteredInvoices(result);
   };
 
-  const handleStatusClick = (status) => {
-    setActiveTab(status.toLowerCase());
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => {
+      const newFilters = {
+        ...prev,
+        [filterType]: value,
+      };
+      return newFilters;
+    });
   };
 
   const handleInvoiceClick = (invoice) => {
@@ -158,245 +157,130 @@ const Dashboard = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveInvoice = (updatedInvoice) => {
-    // Find and update the invoice in the mockInvoices array
-    const index = mockInvoices.findIndex(inv => inv.id === updatedInvoice.id);
-    if (index !== -1) {
-      mockInvoices[index] = updatedInvoice;
+  const handleSaveInvoice = async (updatedInvoice) => {
+    try {
+      await updateInvoice(updatedInvoice);
+      
+      // Update local state
+      setInvoices(prevInvoices => {
+        const updated = prevInvoices.map(inv => 
+          inv.id === updatedInvoice.id ? updatedInvoice : inv
+        );
+        
+        // Calculate new status tiles
+        const tiles = calculateStatusCounts(updated);
+        setStatusTiles(tiles);
+        
+        return updated;
+      });
+      
+      toast({
+        title: "Success",
+        description: "Invoice updated successfully.",
+      });
+      
+      // Dispatch custom event to update other components
+      const statusChangeEvent = new CustomEvent('invoice-status-change', {
+        detail: { invoice: updatedInvoice }
+      });
+      window.dispatchEvent(statusChangeEvent);
+      
+    } catch (error) {
+      console.error("Failed to save invoice:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update invoice. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    // Update the filtered invoices list
-    setFilteredInvoices(prevInvoices => 
-      prevInvoices.map(invoice => 
-        invoice.id === updatedInvoice.id ? updatedInvoice : invoice
-      )
-    );
-    
-    // Force a recalculation of the status tiles
-    setRefreshCounter(prev => prev + 1);
-    
-    // Dispatch a status change event to notify other components
-    const statusChangeEvent = new CustomEvent('invoice-status-change', {
-      detail: { invoice: updatedInvoice }
-    });
-    window.dispatchEvent(statusChangeEvent);
-    
-    toast({
-      title: "Invoice Updated",
-      description: `Invoice ${updatedInvoice.invoiceNo} has been updated successfully.`,
-    });
   };
 
-  const statusData = statusTiles.map(tile => ({
-    name: tile.status,
-    value: tile.count
-  }));
-
-  const monthlyData = [
-    { month: 'Jan', invoices: 30, amount: 45000 },
-    { month: 'Feb', invoices: 25, amount: 38000 },
-    { month: 'Mar', invoices: 35, amount: 52000 },
-    { month: 'Apr', invoices: 40, amount: 60000 },
-    { month: 'May', invoices: 28, amount: 42000 },
-    { month: 'Jun', invoices: 32, amount: 48000 }
+  // Define vendor options based on current invoices
+  const vendorOptions = [
+    { id: 'all', label: 'All Vendors', value: 'all' },
+    ...Array.from(new Set(invoices.map(invoice => invoice.supplierName)))
+      .map(name => ({
+        id: name.toLowerCase().replace(/\s+/g, '-'),
+        label: name,
+        value: name,
+      })),
   ];
 
-  const vendorData = [
-    { name: 'MSD SUPPLIES', invoices: 20 },
-    { name: 'IT RoundPoint', invoices: 15 },
-    { name: 'PANTONE', invoices: 12 },
-    { name: 'ECOSAVE', invoices: 8 },
-    { name: 'Others', invoices: 25 }
+  const monthOptions = [
+    { id: 'all', label: 'All Months', value: 'all' },
+    { id: '01', label: 'January', value: '01' },
+    { id: '02', label: 'February', value: '02' },
+    { id: '03', label: 'March', value: '03' },
+    { id: '04', label: 'April', value: '04' },
+    { id: '05', label: 'May', value: '05' },
+    { id: '06', label: 'June', value: '06' },
+    { id: '07', label: 'July', value: '07' },
+    { id: '08', label: 'August', value: '08' },
+    { id: '09', label: 'September', value: '09' },
+    { id: '10', label: 'October', value: '10' },
+    { id: '11', label: 'November', value: '11' },
+    { id: '12', label: 'December', value: '12' },
   ];
 
-  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE'];
+  const quarterOptions = [
+    { id: 'all', label: 'All Quarters', value: 'all' },
+    { id: 'Q1', label: 'Q1 (Jan-Mar)', value: 'Q1' },
+    { id: 'Q2', label: 'Q2 (Apr-Jun)', value: 'Q2' },
+    { id: 'Q3', label: 'Q3 (Jul-Sep)', value: 'Q3' },
+    { id: 'Q4', label: 'Q4 (Oct-Dec)', value: 'Q4' },
+  ];
 
-  const renderCEODashboard = () => (
-    <div className="space-y-8">
-      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
-        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Invoice Status Overview</h2>
-          <div className="h-80 w-full">
-            <BarChart
-              width={1000}
-              height={300}
-              data={statusData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-              <XAxis dataKey="name" tick={{ fill: '#4B5563' }} />
-              <YAxis tick={{ fill: '#4B5563' }} />
-              <Tooltip 
-                formatter={(value) => [`${value} Invoices`, 'Count']}
-                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}
-              />
-              <Legend />
-              <Bar dataKey="value" name="Invoices" fill="rgba(136, 132, 216, 0.8)" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Monthly Trends</h2>
-          <div className="h-80 w-full">
-            <LineChart
-              width={500}
-              height={300}
-              data={monthlyData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-              <XAxis dataKey="month" tick={{ fill: '#4B5563' }} />
-              <YAxis yAxisId="left" tick={{ fill: '#4B5563' }} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fill: '#4B5563' }} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}
-              />
-              <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="invoices" stroke="rgba(136, 132, 216, 0.8)" strokeWidth={2} name="Invoices" dot={{ stroke: 'rgba(136, 132, 216, 1)', strokeWidth: 2, r: 4, fill: 'white' }} />
-              <Line yAxisId="right" type="monotone" dataKey="amount" stroke="rgba(130, 202, 157, 0.8)" strokeWidth={2} name="Amount (₹)" dot={{ stroke: 'rgba(130, 202, 157, 1)', strokeWidth: 2, r: 4, fill: 'white' }} />
-            </LineChart>
-          </div>
-        </div>
-
-        <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Vendor Distribution</h2>
-          <div className="h-80 w-full flex justify-center">
-            <PieChart width={400} height={300}>
-              <Pie
-                data={vendorData}
-                cx={200}
-                cy={150}
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={120}
-                fill="#8884d8"
-                dataKey="invoices"
-              >
-                {vendorData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} fillOpacity={0.8} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value) => [`${value} Invoices`, 'Count']}
-                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}
-              />
-              <Legend />
-            </PieChart>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderManagerDashboard = () => (
-    <>
-      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
-      
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Manager Approval Queue</h1>
-      </div>
-      
-      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg mb-6">
-        <FilterBar
-          monthOptions={monthOptions}
-          quarterOptions={quarterOptions}
-          yearOptions={yearOptions}
-          vendorOptions={vendorOptions}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
-      </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="bg-white/30 backdrop-blur-md border border-white/40 p-1 rounded-lg">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
-          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Awaiting Approval</TabsTrigger>
-          <TabsTrigger value="final approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
-          <TabsTrigger value="manager rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
-        <InvoiceTable 
-          invoices={filteredInvoices}
-          onInvoiceClick={handleInvoiceClick}
-        />
-      </div>
-      
-      <InvoiceModal
-        invoice={selectedInvoice}
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveInvoice}
-      />
-    </>
-  );
-
-  const renderClerkDashboard = () => (
-    <>
-      <StatusTiles tiles={statusTiles} onClick={handleStatusClick} />
-      
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Invoice Management</h1>
-        <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 border-none text-white">
-          Create New Invoice
-        </Button>
-      </div>
-      
-      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg mb-6">
-        <FilterBar
-          monthOptions={monthOptions}
-          quarterOptions={quarterOptions}
-          yearOptions={yearOptions}
-          vendorOptions={vendorOptions}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
-      </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="bg-white/30 backdrop-blur-md border border-white/40 p-1 rounded-lg">
-          <TabsTrigger value="all" className="data-[state=active]:bg-white/60">All Invoices</TabsTrigger>
-          <TabsTrigger value="pending" className="data-[state=active]:bg-white/60">Pending</TabsTrigger>
-          <TabsTrigger value="approved" className="data-[state=active]:bg-white/60">Approved</TabsTrigger>
-          <TabsTrigger value="rejected" className="data-[state=active]:bg-white/60">Rejected</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      <div className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl shadow-lg">
-        <InvoiceTable 
-          invoices={filteredInvoices}
-          onInvoiceClick={handleInvoiceClick}
-        />
-      </div>
-      
-      <InvoiceModal
-        invoice={selectedInvoice}
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveInvoice}
-      />
-    </>
-  );
+  const yearOptions = [
+    { id: 'all', label: 'All Years', value: 'all' },
+    { id: '2024', label: '2024', value: '2024' },
+    { id: '2023', label: '2023', value: '2023' },
+    { id: '2022', label: '2022', value: '2022' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
-        <main className="mt-8">
-          {user?.role === 'CEO' 
-            ? renderCEODashboard() 
-            : user?.role === 'Manager'
-              ? renderManagerDashboard()
-              : renderClerkDashboard()}
-        </main>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl text-gray-600">Loading invoices...</div>
+          </div>
+        ) : (
+          <>
+            <div className="mt-8">
+              <StatusTiles tiles={statusTiles} />
+            </div>
+            
+            <div className="mt-8">
+              <FilterBar 
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                vendorOptions={vendorOptions}
+                monthOptions={monthOptions}
+                quarterOptions={quarterOptions}
+                yearOptions={yearOptions}
+              />
+              
+              <div className="mt-6">
+                <InvoiceTable 
+                  invoices={filteredInvoices} 
+                  onInvoiceClick={handleInvoiceClick}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
+      
+      {selectedInvoice && (
+        <InvoiceModal
+          invoice={selectedInvoice}
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveInvoice}
+        />
+      )}
     </div>
   );
 };

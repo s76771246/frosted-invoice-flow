@@ -18,9 +18,12 @@ const InvoiceTable = ({ invoices, onInvoiceClick }) => {
   const renderStatus = (status) => {
     const statusClasses = {
       'Approved': 'bg-green-100/80 text-green-800',
+      'Final Approved': 'bg-blue-100/80 text-blue-800', 
       'Pending': 'bg-amber-100/80 text-amber-800',
       'Rejected': 'bg-red-100/80 text-red-800',
+      'Manager Rejected': 'bg-red-200/80 text-red-900',
       'Received': 'bg-purple-100/80 text-purple-800',
+      'Paid': 'bg-emerald-100/80 text-emerald-800',
     };
     
     const className = statusClasses[status] || 'bg-gray-100/80 text-gray-800';
@@ -75,7 +78,7 @@ const InvoiceTable = ({ invoices, onInvoiceClick }) => {
                     />
                   </TableCell>
                   <TableCell className="font-mono text-xs">{invoice.uniqueId}</TableCell>
-                  <TableCell>{invoice.poNo}</TableCell>
+                  <TableCell>{invoice.poNo || 'NA'}</TableCell>
                   <TableCell>{formatDate(invoice.receivedDate || invoice.createdAt)}</TableCell>
                   <TableCell>{formatDate(invoice.invoiceDate)}</TableCell>
                   <TableCell>{invoice.invoiceNo}</TableCell>
