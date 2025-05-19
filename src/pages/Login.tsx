@@ -50,10 +50,10 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-blue-50 to-purple-100">
       {/* Background patterns */}
-      <div className="absolute inset-0 -z-10 bg-pattern-grid opacity-40"></div>
+      <div className="absolute inset-0 z-[-1] bg-pattern-grid opacity-40"></div>
       
       <div className="w-full max-w-md px-4 py-8">
-        <Card className="true-glass overflow-hidden shadow-xl">
+        <Card className="bg-white/25 backdrop-blur-xl border border-white/40 rounded-xl shadow-lg overflow-hidden">
           <CardHeader className="space-y-1">
             <div className="flex justify-center mb-4">
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/80 to-primary/50 shadow-lg flex items-center justify-center">
@@ -78,7 +78,7 @@ const Login = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="pl-10 bg-white/20 backdrop-blur-md"
+                    className="pl-10 bg-white/20 backdrop-blur-md border border-white/40"
                   />
                 </div>
               </div>
@@ -98,11 +98,11 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="pl-10 bg-white/20 backdrop-blur-md"
+                    className="pl-10 bg-white/20 backdrop-blur-md border border-white/40"
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-primary hover:bg-primary/80" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Sign In'}
               </Button>
             </form>
