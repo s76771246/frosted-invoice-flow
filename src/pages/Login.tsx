@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from '@/hooks/use-toast';
+import { Mail, Lock } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -47,68 +48,76 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
-      <div className="absolute inset-0 -z-10 bg-[#f0f0f0] opacity-90"></div>
-      <div className="absolute inset-0 -z-10 bg-pattern-grid"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-blue-50 to-purple-100">
+      {/* Background patterns */}
+      <div className="absolute inset-0 -z-10 bg-pattern-grid opacity-40"></div>
       
-      <div className="w-full max-w-md p-8">
-        <Card className="glassmorphism border-0 backdrop-blur-xl overflow-hidden">
+      <div className="w-full max-w-md px-4 py-8">
+        <Card className="true-glass overflow-hidden shadow-xl">
           <CardHeader className="space-y-1">
             <div className="flex justify-center mb-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/80 to-primary/50 shadow-lg"></div>
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/80 to-primary/50 shadow-lg flex items-center justify-center">
+                <Mail className="h-8 w-8 text-white" />
+              </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center text-black/90">Account Payable Management</CardTitle>
-            <CardDescription className="text-center text-black/70">
+            <CardTitle className="text-2xl font-bold text-center text-foreground">Account Payable Management</CardTitle>
+            <CardDescription className="text-center text-muted-foreground">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-black/90">Email</label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="ceo@e42.ai"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-white/10 backdrop-blur-md border-black/20 text-black/90"
-                />
+                <label htmlFor="email" className="text-sm font-medium text-foreground">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="ceo@e42.ai"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="pl-10 bg-white/20 backdrop-blur-md"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm font-medium text-black/90">Password</label>
+                  <label htmlFor="password" className="text-sm font-medium text-foreground">Password</label>
                   <a href="#" className="text-xs text-primary hover:underline">
                     Forgot Password?
                   </a>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-white/10 backdrop-blur-md border-black/20 text-black/90"
-                />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="pl-10 bg-white/20 backdrop-blur-md"
+                  />
+                </div>
               </div>
-              <Button type="submit" className="w-full bg-primary/80 hover:bg-primary backdrop-blur-sm text-white" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-primary hover:bg-primary/80" disabled={isLoading}>
                 {isLoading ? 'Logging in...' : 'Sign In'}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <div className="text-sm text-center text-black/80">
+            <div className="text-sm text-center text-foreground/80">
               <span>Demo Accounts:</span>
               <div className="grid grid-cols-3 gap-2 mt-2">
-                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-black/20 text-black/90">
+                <Button variant="outline" size="sm" onClick={() => setEmail('ceo@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md">
                   CEO
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-black/20 text-black/90">
+                <Button variant="outline" size="sm" onClick={() => setEmail('clerk@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md">
                   Clerk
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEmail('manager@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md border-black/20 text-black/90">
+                <Button variant="outline" size="sm" onClick={() => setEmail('manager@e42.ai')} className="text-xs bg-white/10 backdrop-blur-md">
                   Manager
                 </Button>
               </div>
