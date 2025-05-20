@@ -1,3 +1,4 @@
+
 import { toast } from '@/hooks/use-toast';
 import env from '@/config/env';
 
@@ -11,6 +12,7 @@ export const fetchInvoices = async () => {
       throw new Error(`API error: ${response.status}`);
     }
     const data = await response.json();
+    console.log('API Response data:', data); // Debug log
     
     // Return the data directly from the external API
     return data;
@@ -70,6 +72,17 @@ export const updateInvoice = async (invoice) => {
 
 // Helper function to calculate status counts from invoice data
 export const calculateStatusCounts = (invoices) => {
+  // Ensure invoices is always an array before trying to use forEach
+  if (!Array.isArray(invoices)) {
+    console.error('calculateStatusCounts received non-array:', invoices);
+    return [
+      { status: 'Received', count: 0, color: 'blue', icon: 'inbox' },
+      { status: 'Approved', count: 0, color: 'green', icon: 'check-circle' },
+      { status: 'Pending', count: 0, color: 'amber', icon: 'clock' },
+      { status: 'Rejected', count: 0, color: 'red', icon: 'x-circle' },
+    ];
+  }
+  
   // If the API already provides status counts, use those instead
   if (window.apiStatusCounts) {
     return [
@@ -114,6 +127,7 @@ export const formatApiData = (data) => {
     window.apiStatusCounts = data.statusCounts;
   }
   
-  // Return the invoices array from the API response
-  return Array.isArray(data.invoices) ? data.invoices : (Array.isArray(data) ? data : []);
+  // Return the invoices array from the API response, ensuring it's always an array
+  const invoicesArray = data.invoices || data;
+  return Array.isArray(invoicesArray) ? invoicesArray : [];
 };

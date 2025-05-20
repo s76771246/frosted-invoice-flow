@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,17 +10,17 @@ import InvoiceModal from '@/components/InvoiceModal';
 import { formatDate } from '@/utils/formatters';
 import { fetchInvoices, updateInvoice, calculateStatusCounts } from '@/services/api';
 import { toast } from '@/hooks/use-toast';
+import useInvoices from '@/hooks/useInvoices';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   
-  const [invoices, setInvoices] = useState([]);
+  const { invoices: fetchedInvoices, isLoading, error: fetchError, refreshInvoices } = useInvoices();
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [statusTiles, setStatusTiles] = useState([]);
   
   // Filter state
@@ -36,35 +35,33 @@ const Dashboard = () => {
 
   // Load invoices on component mount
   useEffect(() => {
-    const loadInvoices = async () => {
-      setIsLoading(true);
-      try {
-        const data = await fetchInvoices();
-        setInvoices(data);
-        setFilteredInvoices(data);
-        
-        // Calculate status counts
-        const tiles = calculateStatusCounts(data);
-        setStatusTiles(tiles);
-      } catch (error) {
-        console.error("Failed to load invoices:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load invoices. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadInvoices();
+    // When fetchedInvoices changes, recalculate status counts and apply filters
+    if (Array.isArray(fetchedInvoices)) {
+      console.log('Invoices array in Dashboard:', fetchedInvoices);
+      
+      // Calculate status tiles
+      const tiles = calculateStatusCounts(fetchedInvoices);
+      setStatusTiles(tiles);
+      
+      // Apply initial filters
+      applyFilters(fetchedInvoices, filters);
+    } else {
+      console.error('fetchedInvoices is not an array:', fetchedInvoices);
+      // Set empty array as fallback
+      setFilteredInvoices([]);
+      setStatusTiles([
+        { status: 'Received', count: 0, color: 'blue', icon: 'inbox' },
+        { status: 'Approved', count: 0, color: 'green', icon: 'check-circle' },
+        { status: 'Pending', count: 0, color: 'amber', icon: 'clock' },
+        { status: 'Rejected', count: 0, color: 'red', icon: 'x-circle' },
+      ]);
+    }
     
     // Listen for invoice status changes
     const handleStatusChange = (event) => {
       const { invoice } = event.detail;
-      setInvoices(prevInvoices => {
-        const updatedInvoices = prevInvoices.map(inv => 
+      if (Array.isArray(fetchedInvoices)) {
+        const updatedInvoices = fetchedInvoices.map(inv => 
           inv.id === invoice.id ? invoice : inv
         );
         
@@ -74,9 +71,7 @@ const Dashboard = () => {
         
         // Apply filters to updated invoices
         applyFilters(updatedInvoices, filters);
-        
-        return updatedInvoices;
-      });
+      }
     };
     
     window.addEventListener('invoice-status-change', handleStatusChange);
@@ -84,14 +79,23 @@ const Dashboard = () => {
     return () => {
       window.removeEventListener('invoice-status-change', handleStatusChange);
     };
-  }, []);
+  }, [fetchedInvoices]);
 
   // Apply filters when filters state changes
   useEffect(() => {
-    applyFilters(invoices, filters);
-  }, [filters, invoices]);
+    if (Array.isArray(fetchedInvoices)) {
+      applyFilters(fetchedInvoices, filters);
+    }
+  }, [filters, fetchedInvoices]);
 
   const applyFilters = (invoiceList, currentFilters) => {
+    // Ensure invoiceList is an array before filtering
+    if (!Array.isArray(invoiceList)) {
+      console.error('Cannot filter non-array invoiceList:', invoiceList);
+      setFilteredInvoices([]);
+      return;
+    }
+    
     let result = [...invoiceList];
     
     // Filter by status
@@ -108,34 +112,43 @@ const Dashboard = () => {
     if (currentFilters.search) {
       const searchLower = currentFilters.search.toLowerCase();
       result = result.filter(inv => 
-        inv.invoiceNo.toLowerCase().includes(searchLower) ||
-        inv.title.toLowerCase().includes(searchLower) ||
-        inv.supplierName.toLowerCase().includes(searchLower)
+        (inv.invoiceNo && inv.invoiceNo.toLowerCase().includes(searchLower)) ||
+        (inv.title && inv.title.toLowerCase().includes(searchLower)) ||
+        (inv.supplierName && inv.supplierName.toLowerCase().includes(searchLower))
       );
     }
     
     // Filter by month
     if (currentFilters.month !== 'all') {
       result = result.filter(inv => {
-        const invoiceMonth = formatDate(inv.invoiceDate).split('/')[0];
-        return invoiceMonth === currentFilters.month;
+        if (inv.invoiceDate) {
+          const invoiceMonth = formatDate(inv.invoiceDate).split('/')[0];
+          return invoiceMonth === currentFilters.month;
+        }
+        return false;
       });
     }
     
     // Filter by year
     if (currentFilters.year !== 'all') {
       result = result.filter(inv => {
-        const invoiceYear = formatDate(inv.invoiceDate).split('/')[2];
-        return invoiceYear === currentFilters.year;
+        if (inv.invoiceDate) {
+          const invoiceYear = formatDate(inv.invoiceDate).split('/')[2];
+          return invoiceYear === currentFilters.year;
+        }
+        return false;
       });
     }
     
     // Filter by quarter
     if (currentFilters.quarter !== 'all') {
       result = result.filter(inv => {
-        const month = parseInt(formatDate(inv.invoiceDate).split('/')[0]);
-        const quarter = Math.ceil(month / 3);
-        return `Q${quarter}` === currentFilters.quarter;
+        if (inv.invoiceDate) {
+          const month = parseInt(formatDate(inv.invoiceDate).split('/')[0]);
+          const quarter = Math.ceil(month / 3);
+          return `Q${quarter}` === currentFilters.quarter;
+        }
+        return false;
       });
     }
     
@@ -161,18 +174,8 @@ const Dashboard = () => {
     try {
       await updateInvoice(updatedInvoice);
       
-      // Update local state
-      setInvoices(prevInvoices => {
-        const updated = prevInvoices.map(inv => 
-          inv.id === updatedInvoice.id ? updatedInvoice : inv
-        );
-        
-        // Calculate new status tiles
-        const tiles = calculateStatusCounts(updated);
-        setStatusTiles(tiles);
-        
-        return updated;
-      });
+      // Update local state by calling refresh
+      refreshInvoices();
       
       toast({
         title: "Success",
@@ -198,12 +201,14 @@ const Dashboard = () => {
   // Define vendor options based on current invoices
   const vendorOptions = [
     { id: 'all', label: 'All Vendors', value: 'all' },
-    ...Array.from(new Set(invoices.map(invoice => invoice.supplierName)))
-      .map(name => ({
-        id: name.toLowerCase().replace(/\s+/g, '-'),
-        label: name,
-        value: name,
-      })),
+    ...(Array.isArray(fetchedInvoices) ? 
+      Array.from(new Set(fetchedInvoices.map(invoice => invoice.supplierName)))
+        .filter(Boolean)
+        .map(name => ({
+          id: name.toLowerCase().replace(/\s+/g, '-'),
+          label: name,
+          value: name,
+        })) : [])
   ];
 
   const monthOptions = [
@@ -232,6 +237,7 @@ const Dashboard = () => {
 
   const yearOptions = [
     { id: 'all', label: 'All Years', value: 'all' },
+    { id: '2025', label: '2025', value: '2025' },
     { id: '2024', label: '2024', value: '2024' },
     { id: '2023', label: '2023', value: '2023' },
     { id: '2022', label: '2022', value: '2022' },
@@ -245,6 +251,10 @@ const Dashboard = () => {
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-xl text-gray-600">Loading invoices...</div>
+          </div>
+        ) : fetchError ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl text-red-600">Error: {fetchError}</div>
           </div>
         ) : (
           <>
