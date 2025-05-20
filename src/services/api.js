@@ -27,6 +27,33 @@ export const fetchInvoices = async () => {
   }
 };
 
+// New function to fetch a specific invoice by ID
+export const fetchInvoiceById = async (id) => {
+  try {
+    // First try to get all invoices
+    const data = await fetchInvoices();
+    
+    // Check if we have invoices data
+    if (data && Array.isArray(data.invoices)) {
+      // Find the invoice with the matching ID
+      const invoice = data.invoices.find(inv => inv.id === id);
+      
+      if (invoice) {
+        return invoice;
+      } else {
+        console.warn(`Invoice with ID ${id} not found in data`);
+      }
+    } else {
+      console.warn('No invoices array in response data');
+    }
+    
+    throw new Error(`Invoice with ID ${id} not found`);
+  } catch (error) {
+    console.error(`Error fetching invoice with ID ${id}:`, error);
+    throw error;
+  }
+};
+
 export const updateInvoice = async (invoice) => {
   try {
     // Extract the MongoDB ID from our "inv-{id}" format

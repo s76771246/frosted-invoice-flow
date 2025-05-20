@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +5,7 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { fetchInvoices, updateInvoice } from '@/services/api';
+import { fetchInvoices, updateInvoice, fetchInvoiceById } from '@/services/api';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -19,14 +18,18 @@ const InvoiceView = () => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remark, setRemark] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Fetch invoice data from API
     const loadInvoice = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
-        const invoices = await fetchInvoices();
-        const selectedInvoice = invoices.find(inv => inv.id === id);
+        // Use the new fetchInvoiceById function
+        const selectedInvoice = await fetchInvoiceById(id);
+        console.log('Loaded invoice:', selectedInvoice);
         
         if (selectedInvoice) {
           setInvoice(selectedInvoice);
@@ -34,6 +37,7 @@ const InvoiceView = () => {
         }
       } catch (error) {
         console.error('Error loading invoice:', error);
+        setError("Failed to load invoice details. The invoice may not exist.");
         toast({
           title: "Error",
           description: "Failed to load invoice details. Please try again later.",
@@ -151,9 +155,9 @@ const InvoiceView = () => {
     </div>;
   }
 
-  if (!invoice) {
+  if (error || !invoice) {
     return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
-      <div className="text-xl text-gray-700">Invoice not found.</div>
+      <div className="text-xl text-gray-700">{error || "Invoice not found."}</div>
     </div>;
   }
 

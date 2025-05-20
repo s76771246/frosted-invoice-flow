@@ -18,9 +18,23 @@ const useInvoices = () => {
       
       // Extract invoices array and status counts from the API response
       if (data && data.invoices) {
+        // Ensure we always have an array of invoices
         const formattedInvoices = Array.isArray(data.invoices) ? data.invoices : [];
         console.log('Formatted invoices:', formattedInvoices);
-        setInvoices(formattedInvoices);
+        
+        // Make sure each invoice has an ID that matches the URL parameter format
+        const processedInvoices = formattedInvoices.map(invoice => {
+          // If the ID doesn't have the 'inv-' prefix, add it
+          if (!invoice.id.startsWith('inv-')) {
+            return {
+              ...invoice,
+              id: `inv-${invoice.id}`
+            };
+          }
+          return invoice;
+        });
+        
+        setInvoices(processedInvoices);
         
         // Store status counts for tile display
         if (data.statusCounts) {

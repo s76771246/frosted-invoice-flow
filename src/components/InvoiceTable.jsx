@@ -37,7 +37,10 @@ const InvoiceTable = ({ invoices, onInvoiceClick }) => {
 
   const handleRowClick = (invoice) => {
     // Navigate to the full page invoice view
-    navigate(`/invoice/${invoice.id}`);
+    // Make sure the ID is formatted correctly for the URL
+    const invoiceId = invoice.id;
+    console.log('Navigating to invoice:', invoiceId);
+    navigate(`/invoice/${invoiceId}`);
   };
 
   return (
