@@ -1,3 +1,4 @@
+
 import { toast } from '@/hooks/use-toast';
 import env from '@/config/env';
 
@@ -12,16 +13,9 @@ export const fetchInvoices = async () => {
     }
     const data = await response.json();
     
-    // Check if the response has the expected format
-    if (data && Array.isArray(data.invoices)) {
-      return data.invoices;
-    } else if (Array.isArray(data)) {
-      // Handle case where API returns just an array of invoices
-      return data;
-    } else {
-      console.error('Unexpected API response format:', data);
-      return [];
-    }
+    // MongoDB aggregation result comes in the format you've set up
+    // which matches our expected structure with invoices array and statusCounts
+    return data;
   } catch (error) {
     console.error('Error fetching invoices:', error);
     toast({
@@ -29,18 +23,30 @@ export const fetchInvoices = async () => {
       description: "Failed to load invoices. Please try again later.",
       variant: "destructive",
     });
-    return [];
+    return { invoices: [], statusCounts: {} };
   }
 };
 
 export const updateInvoice = async (invoice) => {
   try {
-    const response = await fetch(`${API_ENDPOINT}/${invoice.id}`, {
-      method: 'PUT', // or PATCH depending on your API
+    // Extract the MongoDB ID from our "inv-{id}" format
+    const mongoId = invoice.id.startsWith('inv-') ? invoice.id.substring(4) : invoice.id;
+    
+    const response = await fetch(`${API_ENDPOINT}/update`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(invoice),
+      body: JSON.stringify({
+        id: mongoId,
+        updates: {
+          validationStatus: invoice.validationStatus,
+          validationRemark: invoice.validationRemark,
+          clerkApproved: invoice.clerkApproved,
+          managerApproved: invoice.managerApproved,
+          updatedAt: new Date().toISOString()
+        }
+      }),
     });
 
     if (!response.ok) {
@@ -107,5 +113,5 @@ export const formatApiData = (data) => {
   }
   
   // Return the invoices array from the API response
-  return Array.isArray(data.invoices) ? data.invoices : data;
+  return Array.isArray(data.invoices) ? data.invoices : (Array.isArray(data) ? data : []);
 };
