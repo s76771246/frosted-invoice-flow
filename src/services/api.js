@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 import env from '@/config/env';
 
@@ -13,8 +12,7 @@ export const fetchInvoices = async () => {
     }
     const data = await response.json();
     
-    // MongoDB aggregation result comes in the format you've set up
-    // which matches our expected structure with invoices array and statusCounts
+    // Return the data directly from the external API
     return data;
   } catch (error) {
     console.error('Error fetching invoices:', error);
@@ -32,7 +30,11 @@ export const updateInvoice = async (invoice) => {
     // Extract the MongoDB ID from our "inv-{id}" format
     const mongoId = invoice.id.startsWith('inv-') ? invoice.id.substring(4) : invoice.id;
     
-    const response = await fetch(`${API_ENDPOINT}/update`, {
+    // If you need to implement update functionality, you'll need the correct endpoint
+    // For now, we'll use a placeholder endpoint
+    const updateEndpoint = `${API_ENDPOINT.replace('invoice_view', 'invoice_update')}`;
+    
+    const response = await fetch(updateEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

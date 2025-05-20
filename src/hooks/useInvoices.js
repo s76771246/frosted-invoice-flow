@@ -14,8 +14,9 @@ const useInvoices = () => {
     
     try {
       const data = await fetchInvoices();
+      console.log('API Response:', data); // Log the data to see its structure
       
-      // Extract invoices array and status counts from the MongoDB data format
+      // Extract invoices array and status counts from the API response
       if (data && data.invoices) {
         setInvoices(Array.isArray(data.invoices) ? data.invoices : []);
         
@@ -25,6 +26,7 @@ const useInvoices = () => {
           setStatusCounts(data.statusCounts);
         }
       } else {
+        // Fallback in case the API format changes
         const formattedData = formatApiData(data);
         setInvoices(Array.isArray(formattedData) ? formattedData : []);
       }

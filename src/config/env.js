@@ -1,8 +1,8 @@
 
 // Environment configuration
 const env = {
-  // Replace this with your actual API endpoint where your Python MongoDB API is hosted
-  API_ENDPOINT: process.env.REACT_APP_API_ENDPOINT || "http://localhost:5000/api/invoices",
+  // External API endpoint for invoice data
+  API_ENDPOINT: process.env.REACT_APP_API_ENDPOINT || "https://v3poc.lightinfosys.com/external_api/invoice_view",
   
   // Other environment configs can be added here
   DEBUG: process.env.NODE_ENV === "development",
