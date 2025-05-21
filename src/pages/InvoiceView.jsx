@@ -296,7 +296,7 @@ const InvoiceView = () => {
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
               
-              <Button onClick={() => handleAction('approve')} className="<button class=\"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md\">Reject</button>\n">
+              <Button onClick={() => handleAction('approve')} variant="default" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-none shadow-md">
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>
             </div>}
