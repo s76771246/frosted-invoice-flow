@@ -27,7 +27,7 @@ export const fetchInvoices = async () => {
   }
 };
 
-// New function to fetch a specific invoice by ID
+// Fetch a specific invoice by ID
 export const fetchInvoiceById = async (id) => {
   try {
     if (!id) {
@@ -75,25 +75,37 @@ export const fetchInvoiceById = async (id) => {
   }
 };
 
+// Update an invoice using the same API endpoint with POST method
 export const updateInvoice = async (invoice) => {
   try {
-    // Instead of trying to use a different endpoint that may not exist,
-    // we'll simulate a successful update since the API doesn't support updates
+    if (!invoice || !invoice.id) {
+      throw new Error("Invalid invoice data: Missing ID or data");
+    }
+    
     console.log('Updating invoice with data:', invoice);
     
-    // This is a simulated update since we don't have a real update endpoint
-    // In a real application, you would make a POST/PUT request to an API endpoint
+    // Use the same API_ENDPOINT but with POST method for updating
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'update',
+        invoice: invoice
+      }),
+    });
     
-    // Simulate a successful response
-    const simulatedResponse = {
-      success: true,
-      message: "Invoice updated successfully",
-      data: invoice
-    };
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log('Update response:', result);
     
     // Dispatch a custom event to notify other components of the update
     const updateEvent = new CustomEvent('invoice-updated', { 
-      detail: { invoice: simulatedResponse.data } 
+      detail: { invoice: invoice } 
     });
     window.dispatchEvent(updateEvent);
     
@@ -103,7 +115,7 @@ export const updateInvoice = async (invoice) => {
       description: `Invoice ${invoice.invoiceNo} was updated successfully.`,
     });
     
-    return simulatedResponse;
+    return result;
   } catch (error) {
     console.error('Error updating invoice:', error);
     toast({

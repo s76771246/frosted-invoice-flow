@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { fetchInvoiceById, updateInvoice } from '@/services/api';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
+import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
@@ -17,13 +18,15 @@ const InvoiceView = () => {
   const { user } = useAuth();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
   const [remark, setRemark] = useState('');
   const [error, setError] = useState(null);
-  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     // Fetch invoice data from API
     const loadInvoice = async () => {
+      if (!id) return;
+      
       setLoading(true);
       setError(null);
       try {
@@ -47,9 +50,7 @@ const InvoiceView = () => {
       }
     };
     
-    if (id) {
-      loadInvoice();
-    }
+    loadInvoice();
   }, [id]);
 
   const handleRemarkChange = e => {
@@ -57,7 +58,7 @@ const InvoiceView = () => {
   };
 
   const handleAction = async action => {
-    if (!invoice || !user) return;
+    if (!invoice || !user || processing) return;
     
     setProcessing(true);
     
@@ -95,11 +96,11 @@ const InvoiceView = () => {
     };
     
     try {
-      // Save to API
+      // Save to API using the updateInvoice function
       const result = await updateInvoice(updatedInvoice);
       console.log('Update result:', result);
 
-      // Update local state
+      // Update local state with the updated invoice
       setInvoice(updatedInvoice);
 
       // Show toast notification
@@ -108,7 +109,7 @@ const InvoiceView = () => {
         description: `Invoice ${invoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'}.`
       });
 
-      // This causes a window event to be dispatched that will force the tiles to update
+      // Dispatch a custom event to update other components
       const statusChangeEvent = new CustomEvent('invoice-status-change', {
         detail: {
           invoice: updatedInvoice
@@ -162,7 +163,9 @@ const InvoiceView = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <div className="text-xl text-gray-700">Loading invoice...</div>
+        <div className="text-xl text-gray-700 flex items-center">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading invoice...
+        </div>
       </div>
     );
   }
@@ -270,7 +273,13 @@ const InvoiceView = () => {
                 
                 <div>
                   <h2 className="text-xl font-semibold text-gray-700 mb-3">Validation Remark</h2>
-                  <textarea className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" placeholder="Add or edit a validation remark..." value={remark} onChange={handleRemarkChange} />
+                  <textarea 
+                    className="w-full h-24 p-3 border rounded-md text-gray-700 bg-white/70 border-purple-100/80 focus:border-purple-300 focus:ring-0" 
+                    placeholder="Add or edit a validation remark..." 
+                    value={remark} 
+                    onChange={handleRemarkChange}
+                    disabled={processing}
+                  />
                 </div>
               </div>
             </div>
@@ -289,13 +298,16 @@ const InvoiceView = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoice.items ? invoice.items.map((item, index) => <TableRow key={index}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{item.description}</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>{formatCurrency(item.rate, invoice.invoiceCurrency)}</TableCell>
-                        <TableCell>{formatCurrency(item.amount, invoice.invoiceCurrency)}</TableCell>
-                      </TableRow>) : <>
+                  {invoice.items ? invoice.items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{item.description}</TableCell>
+                      <TableCell>{item.quantity}</TableCell>
+                      <TableCell>{formatCurrency(item.rate, invoice.invoiceCurrency)}</TableCell>
+                      <TableCell>{formatCurrency(item.amount, invoice.invoiceCurrency)}</TableCell>
+                    </TableRow>
+                  )) : (
+                    <>
                       <TableRow>
                         <TableCell>1</TableCell>
                         <TableCell>Professional Services</TableCell>
@@ -310,13 +322,14 @@ const InvoiceView = () => {
                         <TableCell>{formatCurrency(invoice.invoiceValue * 0.02, invoice.invoiceCurrency)}</TableCell>
                         <TableCell>{formatCurrency(invoice.invoiceValue * 0.2, invoice.invoiceCurrency)}</TableCell>
                       </TableRow>
-                    </>}
+                    </>
+                  )}
                 </TableBody>
               </Table>
             </div>
           </div>
           
-          {/* Action Buttons with improved gradient styling */}
+          {/* Action Buttons with processing state */}
           {canActOnInvoice() && (
             <div className="flex justify-end gap-4 mt-8">
               <Button 
@@ -325,16 +338,23 @@ const InvoiceView = () => {
                 disabled={processing}
                 className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md"
               >
-                {processing ? 'Processing...' : <><X className="mr-2 h-4 w-4" /> Reject</>}
+                {processing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  <><X className="mr-2 h-4 w-4" /> Reject</>
+                )}
               </Button>
               
               <Button 
                 onClick={() => handleAction('approve')} 
-                variant="default" 
                 disabled={processing}
                 className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-none shadow-md"
               >
-                {processing ? 'Processing...' : <><Check className="mr-2 h-4 w-4" /> Approve</>}
+                {processing ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                ) : (
+                  <><Check className="mr-2 h-4 w-4" /> Approve</>
+                )}
               </Button>
             </div>
           )}

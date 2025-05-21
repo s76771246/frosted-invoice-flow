@@ -69,6 +69,21 @@ const useInvoices = () => {
 
   useEffect(() => {
     loadInvoices();
+    
+    // Listen for invoice update events
+    const handleInvoiceUpdated = (event) => {
+      console.log('Invoice updated event received:', event.detail);
+      // Refresh the invoice list to reflect changes
+      loadInvoices();
+    };
+    
+    window.addEventListener('invoice-updated', handleInvoiceUpdated);
+    window.addEventListener('invoice-status-change', handleInvoiceUpdated);
+    
+    return () => {
+      window.removeEventListener('invoice-updated', handleInvoiceUpdated);
+      window.removeEventListener('invoice-status-change', handleInvoiceUpdated);
+    };
   }, []);
 
   const refreshInvoices = () => {
