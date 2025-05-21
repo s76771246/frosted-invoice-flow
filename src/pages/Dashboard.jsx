@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,11 +18,12 @@ const Dashboard = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   
-  const { invoices: fetchedInvoices, isLoading, error: fetchError, refreshInvoices } = useInvoices();
+  const { invoices: fetchedInvoices, isLoading, error: fetchError, refreshInvoices, statusCounts: apiStatusCounts } = useInvoices();
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusTiles, setStatusTiles] = useState([]);
+  const [activeStatus, setActiveStatus] = useState('all');
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -60,33 +62,33 @@ const Dashboard = () => {
     // Listen for invoice status changes
     const handleStatusChange = (event) => {
       const { invoice } = event.detail;
-      if (Array.isArray(fetchedInvoices)) {
-        const updatedInvoices = fetchedInvoices.map(inv => 
-          inv.id === invoice.id ? invoice : inv
-        );
-        
-        // Update status tiles
-        const tiles = calculateStatusCounts(updatedInvoices);
-        setStatusTiles(tiles);
-        
-        // Apply filters to updated invoices
-        applyFilters(updatedInvoices, filters);
-      }
+      console.log('Status change detected in Dashboard for invoice:', invoice);
+      
+      // Force a refresh of the invoices from the API
+      refreshInvoices();
     };
     
     window.addEventListener('invoice-status-change', handleStatusChange);
+    window.addEventListener('invoice-updated', handleStatusChange);
     
     return () => {
       window.removeEventListener('invoice-status-change', handleStatusChange);
+      window.removeEventListener('invoice-updated', handleStatusChange);
     };
-  }, [fetchedInvoices]);
+  }, [fetchedInvoices, refreshInvoices]);
 
-  // Apply filters when filters state changes
+  // Apply filters when filters state changes or active status changes
   useEffect(() => {
     if (Array.isArray(fetchedInvoices)) {
-      applyFilters(fetchedInvoices, filters);
+      // Update the filters object with the active status
+      const updatedFilters = {
+        ...filters,
+        status: activeStatus !== 'all' ? activeStatus : filters.status
+      };
+      
+      applyFilters(fetchedInvoices, updatedFilters);
     }
-  }, [filters, fetchedInvoices]);
+  }, [filters, fetchedInvoices, activeStatus]);
 
   const applyFilters = (invoiceList, currentFilters) => {
     // Ensure invoiceList is an array before filtering
@@ -99,7 +101,20 @@ const Dashboard = () => {
     let result = [...invoiceList];
     
     // Filter by status
-    if (currentFilters.status !== 'all') {
+    if (activeStatus !== 'all') {
+      // Special handling for status tiles clicks
+      const statusMap = {
+        'received': ['Received'],
+        'approved': ['Approved', 'Final Approved'],
+        'pending': ['Pending'],
+        'rejected': ['Rejected', 'Manager Rejected']
+      };
+      
+      const statusValues = statusMap[activeStatus.toLowerCase()];
+      if (statusValues) {
+        result = result.filter(inv => statusValues.includes(inv.validationStatus));
+      }
+    } else if (currentFilters.status !== 'all') {
       result = result.filter(inv => inv.validationStatus === currentFilters.status);
     }
     
@@ -156,6 +171,11 @@ const Dashboard = () => {
   };
 
   const handleFilterChange = (filterType, value) => {
+    // If changing status filter from FilterBar, also update activeStatus
+    if (filterType === 'status') {
+      setActiveStatus(value);
+    }
+    
     setFilters(prev => {
       const newFilters = {
         ...prev,
@@ -196,6 +216,18 @@ const Dashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // Handle status tile click
+  const handleStatusTileClick = (status) => {
+    console.log('Status tile clicked:', status);
+    setActiveStatus(status);
+    
+    // Apply filters based on the selected status
+    applyFilters(fetchedInvoices, {
+      ...filters,
+      status: status
+    });
   };
 
   // Define vendor options based on current invoices
@@ -259,10 +291,28 @@ const Dashboard = () => {
         ) : (
           <>
             <div className="mt-8">
-              <StatusTiles tiles={statusTiles} />
+              <StatusTiles tiles={statusTiles} onClick={handleStatusTileClick} />
             </div>
             
             <div className="mt-8">
+              <div className="mb-4">
+                <div className="inline-flex bg-white/30 backdrop-blur-md p-1 rounded-lg border border-white/40">
+                  {['All', 'Received', 'Pending', 'Approved', 'Rejected'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setActiveStatus(status.toLowerCase())}
+                      className={`px-4 py-2 rounded-md transition-all ${
+                        activeStatus === status.toLowerCase()
+                          ? 'bg-white/70 text-gray-800 shadow-sm'
+                          : 'text-gray-600 hover:bg-white/20'
+                      }`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
               <FilterBar 
                 filters={filters}
                 onFilterChange={handleFilterChange}

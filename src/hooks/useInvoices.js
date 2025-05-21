@@ -7,6 +7,7 @@ const useInvoices = () => {
   const [statusCounts, setStatusCounts] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add a refresh trigger
 
   const loadInvoices = async () => {
     setIsLoading(true);
@@ -85,9 +86,11 @@ const useInvoices = () => {
       window.removeEventListener('invoice-updated', handleInvoiceUpdated);
       window.removeEventListener('invoice-status-change', handleInvoiceUpdated);
     };
-  }, []);
+  }, [refreshTrigger]); // Add refreshTrigger as a dependency
 
   const refreshInvoices = () => {
+    // Increment refresh trigger to force a re-fetch
+    setRefreshTrigger(prev => prev + 1);
     return loadInvoices();
   };
 

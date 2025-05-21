@@ -28,13 +28,21 @@ const StatusTiles = ({ tiles, onClick }) => {
     }
   };
 
+  const handleTileClick = (status) => {
+    if (onClick) {
+      console.log('Tile clicked:', status);
+      // Convert status to lowercase for consistent filtering
+      onClick(status.toLowerCase());
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {filteredTiles.map((tile) => (
         <div
           key={tile.status}
           className="bg-white/30 backdrop-blur-md border border-white/40 rounded-xl p-6 shadow-lg cursor-pointer transition-all duration-300 hover:bg-white/40 hover:shadow-xl"
-          onClick={() => onClick && onClick(tile.status.toLowerCase())}
+          onClick={() => handleTileClick(tile.status)}
         >
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-semibold text-gray-800">{tile.status}</h3>
