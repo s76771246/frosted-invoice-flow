@@ -10,27 +10,27 @@ import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-
 const InvoiceView = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remark, setRemark] = useState('');
   const [error, setError] = useState(null);
-
   useEffect(() => {
     // Fetch invoice data from API
     const loadInvoice = async () => {
       setLoading(true);
       setError(null);
-      
       try {
         // Use the new fetchInvoiceById function
         const selectedInvoice = await fetchInvoiceById(id);
         console.log('Loaded invoice:', selectedInvoice);
-        
         if (selectedInvoice) {
           setInvoice(selectedInvoice);
           setRemark(selectedInvoice.validationRemark || '');
@@ -41,33 +41,32 @@ const InvoiceView = () => {
         toast({
           title: "Error",
           description: "Failed to load invoice details. Please try again later.",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
       }
     };
-    
     loadInvoice();
   }, [id]);
-
   const handleRemarkChange = e => {
     setRemark(e.target.value);
   };
-
-  const handleAction = async (action) => {
+  const handleAction = async action => {
     if (!invoice || !user) return;
-    
     let updatedStatus;
     let updateInfo = {};
-    
     if (action === 'approve') {
       if (user.role === 'Clerk') {
         updatedStatus = 'Approved';
-        updateInfo = { clerkApproved: true };
+        updateInfo = {
+          clerkApproved: true
+        };
       } else if (user.role === 'Manager') {
         updatedStatus = 'Final Approved';
-        updateInfo = { managerApproved: true };
+        updateInfo = {
+          managerApproved: true
+        };
       } else {
         updatedStatus = 'Approved';
       }
@@ -78,48 +77,45 @@ const InvoiceView = () => {
         updatedStatus = 'Rejected';
       }
     }
-    
     const updatedInvoice = {
       ...invoice,
       validationStatus: updatedStatus,
       validationRemark: remark || `${action === 'approve' ? 'Approved' : 'Rejected'} by ${user.role}`,
       ...updateInfo
     };
-
     try {
       // Save to API
       await updateInvoice(updatedInvoice);
-      
+
       // Update local state
       setInvoice(updatedInvoice);
-      
+
       // Show toast notification
       toast({
         title: `Invoice ${action === 'approve' ? 'Approved' : 'Rejected'}`,
         description: `Invoice ${invoice.invoiceNo} has been ${action === 'approve' ? 'approved' : 'rejected'}.`
       });
-      
+
       // This causes a window event to be dispatched that will force the tiles to update
       const statusChangeEvent = new CustomEvent('invoice-status-change', {
-        detail: { invoice: updatedInvoice }
+        detail: {
+          invoice: updatedInvoice
+        }
       });
       window.dispatchEvent(statusChangeEvent);
-      
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
-      
     } catch (error) {
       console.error('Error updating invoice:', error);
       toast({
         title: "Error",
         description: `Failed to ${action} invoice. Please try again later.`,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
-  const renderStatus = (status) => {
+  const renderStatus = status => {
     const statusClasses = {
       'Approved': 'bg-green-100 text-green-800 border-green-200',
       'Final Approved': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -129,17 +125,13 @@ const InvoiceView = () => {
       'Received': 'bg-purple-100 text-purple-800 border-purple-200',
       'Paid': 'bg-emerald-100 text-emerald-800 border-emerald-200'
     };
-    
     const className = statusClasses[status] || 'bg-gray-100 text-gray-800 border-gray-200';
-    
     return <Badge variant="outline" className={`${className} px-3 py-1 text-xs rounded-full`}>
         {status}
       </Badge>;
   };
-
   const canActOnInvoice = () => {
     if (!invoice || !user) return false;
-    
     if (user.role === 'CEO') {
       return true;
     } else if (user.role === 'Manager') {
@@ -148,19 +140,16 @@ const InvoiceView = () => {
       return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
     }
   };
-
   if (loading) {
     return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
       <div className="text-xl text-gray-700">Loading invoice...</div>
     </div>;
   }
-
   if (error || !invoice) {
     return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
       <div className="text-xl text-gray-700">{error || "Invoice not found."}</div>
     </div>;
   }
-
   return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
@@ -274,18 +263,13 @@ const InvoiceView = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {invoice.items ? (
-                    invoice.items.map((item, index) => (
-                      <TableRow key={index}>
+                  {invoice.items ? invoice.items.map((item, index) => <TableRow key={index}>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.description}</TableCell>
                         <TableCell>{item.quantity}</TableCell>
                         <TableCell>{formatCurrency(item.rate, invoice.invoiceCurrency)}</TableCell>
                         <TableCell>{formatCurrency(item.amount, invoice.invoiceCurrency)}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <>
+                      </TableRow>) : <>
                       <TableRow>
                         <TableCell>1</TableCell>
                         <TableCell>Professional Services</TableCell>
@@ -300,35 +284,24 @@ const InvoiceView = () => {
                         <TableCell>{formatCurrency(invoice.invoiceValue * 0.02, invoice.invoiceCurrency)}</TableCell>
                         <TableCell>{formatCurrency(invoice.invoiceValue * 0.2, invoice.invoiceCurrency)}</TableCell>
                       </TableRow>
-                    </>
-                  )}
+                    </>}
                 </TableBody>
               </Table>
             </div>
           </div>
           
           {/* Action Buttons with improved gradient styling */}
-          {canActOnInvoice() && 
-            <div className="flex justify-end gap-4 mt-8">
-              <Button 
-                variant="destructive" 
-                onClick={() => handleAction('reject')} 
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md"
-              >
+          {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8">
+              <Button variant="destructive" onClick={() => handleAction('reject')} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md">
                 <X className="mr-2 h-4 w-4" /> Reject
               </Button>
               
-              <Button 
-                onClick={() => handleAction('approve')} 
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-none shadow-md"
-              >
+              <Button onClick={() => handleAction('approve')} className="<button class=\"bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md\">Reject</button>\n">
                 <Check className="mr-2 h-4 w-4" /> Approve
               </Button>
-            </div>
-          }
+            </div>}
         </main>
       </div>
     </div>;
 };
-
 export default InvoiceView;
