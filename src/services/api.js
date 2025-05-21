@@ -75,7 +75,7 @@ export const fetchInvoiceById = async (id) => {
   }
 };
 
-// Update an invoice using the same API endpoint with POST method
+// Update an invoice using the same API endpoint with PUT method
 export const updateInvoice = async (invoice) => {
   try {
     if (!invoice || !invoice.id) {
@@ -84,9 +84,9 @@ export const updateInvoice = async (invoice) => {
     
     console.log('Updating invoice with data:', invoice);
     
-    // Use the same API_ENDPOINT but with POST method for updating
+    // Use the same API_ENDPOINT but with PUT method for updating
     const response = await fetch(API_ENDPOINT, {
-      method: 'POST',
+      method: 'PUT', // Changed from POST to PUT for Django backend compatibility
       headers: {
         'Content-Type': 'application/json',
       },

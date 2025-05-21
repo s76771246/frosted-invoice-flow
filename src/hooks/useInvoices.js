@@ -77,6 +77,7 @@ const useInvoices = () => {
       loadInvoices();
     };
     
+    // Listen for both invoice-updated and invoice-status-change events
     window.addEventListener('invoice-updated', handleInvoiceUpdated);
     window.addEventListener('invoice-status-change', handleInvoiceUpdated);
     
