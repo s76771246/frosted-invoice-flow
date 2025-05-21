@@ -5,30 +5,29 @@ import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { fetchInvoices, updateInvoice, fetchInvoiceById } from '@/services/api';
+import { fetchInvoiceById, updateInvoice } from '@/services/api';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { ChevronLeft, FileText, Check, X, Building, Calendar, Tag, Landmark, CircleDollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+
 const InvoiceView = () => {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remark, setRemark] = useState('');
   const [error, setError] = useState(null);
+  const [processing, setProcessing] = useState(false);
+
   useEffect(() => {
     // Fetch invoice data from API
     const loadInvoice = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Use the new fetchInvoiceById function
+        console.log('Fetching invoice with ID:', id);
         const selectedInvoice = await fetchInvoiceById(id);
         console.log('Loaded invoice:', selectedInvoice);
         if (selectedInvoice) {
@@ -47,15 +46,24 @@ const InvoiceView = () => {
         setLoading(false);
       }
     };
-    loadInvoice();
+    
+    if (id) {
+      loadInvoice();
+    }
   }, [id]);
+
   const handleRemarkChange = e => {
     setRemark(e.target.value);
   };
+
   const handleAction = async action => {
     if (!invoice || !user) return;
+    
+    setProcessing(true);
+    
     let updatedStatus;
     let updateInfo = {};
+    
     if (action === 'approve') {
       if (user.role === 'Clerk') {
         updatedStatus = 'Approved';
@@ -77,15 +85,19 @@ const InvoiceView = () => {
         updatedStatus = 'Rejected';
       }
     }
+    
     const updatedInvoice = {
       ...invoice,
       validationStatus: updatedStatus,
       validationRemark: remark || `${action === 'approve' ? 'Approved' : 'Rejected'} by ${user.role}`,
-      ...updateInfo
+      ...updateInfo,
+      updatedAt: new Date().toISOString()
     };
+    
     try {
       // Save to API
-      await updateInvoice(updatedInvoice);
+      const result = await updateInvoice(updatedInvoice);
+      console.log('Update result:', result);
 
       // Update local state
       setInvoice(updatedInvoice);
@@ -103,6 +115,8 @@ const InvoiceView = () => {
         }
       });
       window.dispatchEvent(statusChangeEvent);
+      
+      // Redirect after a short delay
       setTimeout(() => {
         navigate('/dashboard');
       }, 1500);
@@ -113,8 +127,11 @@ const InvoiceView = () => {
         description: `Failed to ${action} invoice. Please try again later.`,
         variant: "destructive"
       });
+    } finally {
+      setProcessing(false);
     }
   };
+  
   const renderStatus = status => {
     const statusClasses = {
       'Approved': 'bg-green-100 text-green-800 border-green-200',
@@ -130,6 +147,7 @@ const InvoiceView = () => {
         {status}
       </Badge>;
   };
+  
   const canActOnInvoice = () => {
     if (!invoice || !user) return false;
     if (user.role === 'CEO') {
@@ -140,17 +158,25 @@ const InvoiceView = () => {
       return invoice.validationStatus === 'Pending' || invoice.validationStatus === 'Received';
     }
   };
+  
   if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
-      <div className="text-xl text-gray-700">Loading invoice...</div>
-    </div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-xl text-gray-700">Loading invoice...</div>
+      </div>
+    );
   }
+  
   if (error || !invoice) {
-    return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
-      <div className="text-xl text-gray-700">{error || "Invoice not found."}</div>
-    </div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50 flex items-center justify-center">
+        <div className="text-xl text-gray-700">{error || "Invoice not found."}</div>
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <Header />
         
@@ -291,17 +317,31 @@ const InvoiceView = () => {
           </div>
           
           {/* Action Buttons with improved gradient styling */}
-          {canActOnInvoice() && <div className="flex justify-end gap-4 mt-8">
-              <Button variant="destructive" onClick={() => handleAction('reject')} className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md">
-                <X className="mr-2 h-4 w-4" /> Reject
+          {canActOnInvoice() && (
+            <div className="flex justify-end gap-4 mt-8">
+              <Button 
+                variant="destructive" 
+                onClick={() => handleAction('reject')} 
+                disabled={processing}
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-none shadow-md"
+              >
+                {processing ? 'Processing...' : <><X className="mr-2 h-4 w-4" /> Reject</>}
               </Button>
               
-              <Button onClick={() => handleAction('approve')} variant="default" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-none shadow-md">
-                <Check className="mr-2 h-4 w-4" /> Approve
+              <Button 
+                onClick={() => handleAction('approve')} 
+                variant="default" 
+                disabled={processing}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-none shadow-md"
+              >
+                {processing ? 'Processing...' : <><Check className="mr-2 h-4 w-4" /> Approve</>}
               </Button>
-            </div>}
+            </div>
+          )}
         </main>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default InvoiceView;
