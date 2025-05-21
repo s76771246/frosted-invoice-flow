@@ -30,13 +30,17 @@ export const fetchInvoices = async () => {
 // New function to fetch a specific invoice by ID
 export const fetchInvoiceById = async (id) => {
   try {
+    if (!id) {
+      throw new Error("Invalid invoice ID: ID cannot be null or undefined");
+    }
+    
     // First try to get all invoices
     const data = await fetchInvoices();
     
     // Check if we have invoices data
     if (data && Array.isArray(data.invoices)) {
       // Find the invoice with the matching ID
-      const invoice = data.invoices.find(inv => inv.id === id);
+      const invoice = data.invoices.find(inv => inv && inv.id === id);
       
       if (invoice) {
         return invoice;

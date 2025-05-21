@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -38,6 +37,16 @@ const InvoiceTable = ({ invoices, onInvoiceClick }) => {
   const handleRowClick = (invoice) => {
     // Navigate to the full page invoice view
     // Make sure the ID is formatted correctly for the URL
+    if (!invoice || !invoice.id) {
+      console.error('Cannot navigate: Invoice or invoice ID is missing', invoice);
+      toast({
+        title: "Error",
+        description: "Cannot view invoice details due to missing information.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const invoiceId = invoice.id;
     console.log('Navigating to invoice:', invoiceId);
     navigate(`/invoice/${invoiceId}`);

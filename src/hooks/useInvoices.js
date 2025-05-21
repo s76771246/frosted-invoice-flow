@@ -24,13 +24,23 @@ const useInvoices = () => {
         
         // Make sure each invoice has an ID that matches the URL parameter format
         const processedInvoices = formattedInvoices.map(invoice => {
-          // If the ID doesn't have the 'inv-' prefix, add it
-          if (!invoice.id.startsWith('inv-')) {
+          // Check if invoice and invoice.id exist before accessing startsWith
+          if (invoice && invoice.id && typeof invoice.id === 'string' && !invoice.id.startsWith('inv-')) {
             return {
               ...invoice,
               id: `inv-${invoice.id}`
             };
           }
+          
+          // If invoice.id is null/undefined, generate a fallback ID
+          if (!invoice.id) {
+            console.warn('Invoice with missing ID found:', invoice);
+            return {
+              ...invoice,
+              id: `inv-unknown-${Math.random().toString(36).substring(2, 10)}`
+            };
+          }
+          
           return invoice;
         });
         
